@@ -30,13 +30,14 @@ void ChunkManager::Update(const UpdateEvent& event) {
 		chunksToUpdate.erase(chunksToUpdate.begin());
 
 		for (int i = 0; i < 9; i++) {
-			GenerateChunk(glm::ivec2(i % 3, i / 3) + mesh.pos);
+			GenerateChunk(glm::ivec2(i % 3 - 1, i / 3 - 1) + mesh.pos);
 		}
 
 		mesh.Update(event);
 	}
 }
 
+//TODO: broken
 bool ChunkManager::VoxelRaytrace(glm::vec3 pos, const glm::vec3& dir, float tMax, BlockHitInfo& info) const {
 	pos += glm::vec3{ CHUNK_SIZE / 2, 0, CHUNK_SIZE / 2 };
 	glm::vec3 tmpMin = pos;
@@ -109,7 +110,6 @@ void ChunkManager::BreakBlock(const glm::ivec3& pos, const UpdateEvent& event) {
 	chunks[chunkID]->shouldUpdate = true;
 }
 
-//TODO: broken
 void ChunkManager::PlaceBlock(const glm::ivec3& pos, BlockID block, const UpdateEvent& event) {
 	glm::ivec2 chunkID;
 	glm::ivec3 blockPos = BlockToChunk(pos, chunkID);
@@ -143,7 +143,7 @@ void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
 					if (y == height) {
 						world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 1; //Grass
 					}
-					else if (y > height - 3 && y < height) {
+					else if (y > height - 2 && y < height) {
 						world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 2; //Dirt
 					}
 					else if (y < height) {
