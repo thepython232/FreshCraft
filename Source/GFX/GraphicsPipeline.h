@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Pipeline.h"
+#include "Core\Pipeline.h"
 
 class GraphicsPipeline : public Pipeline {
 public:

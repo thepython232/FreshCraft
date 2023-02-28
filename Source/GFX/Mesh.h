@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Buffer.h"
+#include "Core\Buffer.h"
 #include "Vertex.h"
 
 class Mesh {

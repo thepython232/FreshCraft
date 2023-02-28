@@ -1,5 +1,5 @@
 #include "Texture.h"
-#include "Buffer.h"
+#include "Core\Buffer.h"
 
 #ifdef _MSC_VER
 #pragma warning (push, 0)

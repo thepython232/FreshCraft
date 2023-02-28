@@ -7,7 +7,7 @@
 #include "GLFW/glfw3native.h"
 
 #include "Common.h"
-#include "InputSystem.h"
+#include "Input\InputSystem.h"
 
 class Window {
 public:

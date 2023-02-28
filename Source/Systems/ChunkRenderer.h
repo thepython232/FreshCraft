@@ -1,10 +1,10 @@
 #pragma once
 
-#include "RenderSystem.h"
-#include "ChunkManager.h"
-#include "GraphicsPipeline.h"
-#include "Descriptors.h"
-#include "Texture.h"
+#include "GFX\RenderSystem.h"
+#include "Block\ChunkManager.h"
+#include "GFX\GraphicsPipeline.h"
+#include "Core\Descriptors.h"
+#include "GFX\Texture.h"
 
 class ChunkRenderer : public RenderSystem<ChunkRenderer> {
 public:

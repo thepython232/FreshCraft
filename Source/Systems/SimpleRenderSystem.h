@@ -1,10 +1,10 @@
 #pragma once
 
-#include "RenderSystem.h"
-#include "GraphicsPipeline.h"
-#include "Texture.h"
-#include "Mesh.h"
-#include "Descriptors.h"
+#include "GFX\RenderSystem.h"
+#include "GFX\GraphicsPipeline.h"
+#include "GFX\Texture.h"
+#include "GFX\Mesh.h"
+#include "Core\Descriptors.h"
 
 class SimpleRenderSystem : public RenderSystem<SimpleRenderSystem> {
 public:

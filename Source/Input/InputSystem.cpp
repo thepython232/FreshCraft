@@ -1,6 +1,6 @@
 #include "InputSystem.h"
-#include "Window.h"
-#include "Events.h"
+#include "Core\Window.h"
+#include "Core\Events.h"
 
 InputSystem::InputSystem(glm::vec2 mousePos) : mousePos(mousePos) {
 	keys.reset();

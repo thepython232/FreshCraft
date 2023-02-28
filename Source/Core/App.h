@@ -1,14 +1,14 @@
 #pragma once
 
 #include "Common.h"
-#include "Renderer.h"
-#include "Descriptors.h"
-#include "RenderSystem.h"
-#include "Buffer.h"
-#include "Pipeline.h"
-#include "ChunkManager.h"
-#include "Camera.h"
-#include "CameraController.h"
+#include "GFX\Renderer.h"
+#include "Core\Descriptors.h"
+#include "GFX\RenderSystem.h"
+#include "Core\Buffer.h"
+#include "Core\Pipeline.h"
+#include "Block\ChunkManager.h"
+#include "GFX\Camera.h"
+#include "GFX\CameraController.h"
 
 class App {
 public:

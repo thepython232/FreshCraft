@@ -115,7 +115,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Dev\TinyOBJ;C:\Dev\STBImage;C:\Dev\glfw\include;C:\Dev\glm\include;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Jacob Fresh\source\repos\FreshCraft\Source;C:\Dev\TinyOBJ;C:\Dev\STBImage;C:\Dev\glfw\include;C:\Dev\glm\include;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
     </ClCompile>
     <Link>
@@ -140,7 +140,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Dev\TinyOBJ;C:\Dev\STBImage;C:\Dev\glfw\include;C:\Dev\glm\include;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Jacob Fresh\source\repos\FreshCraft\Source;C:\Dev\TinyOBJ;C:\Dev\STBImage;C:\Dev\glfw\include;C:\Dev\glm\include;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -158,55 +158,55 @@
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Source\App.cpp" />
-    <ClCompile Include="Source\Buffer.cpp" />
-    <ClCompile Include="Source\CameraController.cpp" />
-    <ClCompile Include="Source\ChunkMesh.cpp" />
-    <ClCompile Include="Source\ChunkManager.cpp" />
-    <ClCompile Include="Source\ChunkRenderer.cpp" />
-    <ClCompile Include="Source\Descriptors.cpp" />
-    <ClCompile Include="Source\Device.cpp" />
-    <ClCompile Include="Source\GraphicsPipeline.cpp" />
-    <ClCompile Include="Source\InputSystem.cpp" />
-    <ClCompile Include="Source\Instance.cpp" />
+    <ClCompile Include="Source\Core\App.cpp" />
+    <ClCompile Include="Source\Core\Buffer.cpp" />
+    <ClCompile Include="Source\GFX\CameraController.cpp" />
+    <ClCompile Include="Source\Block\ChunkMesh.cpp" />
+    <ClCompile Include="Source\Block\ChunkManager.cpp" />
+    <ClCompile Include="Source\GFX\Mesh.cpp" />
+    <ClCompile Include="Source\Systems\ChunkRenderer.cpp" />
+    <ClCompile Include="Source\Core\Descriptors.cpp" />
+    <ClCompile Include="Source\Core\Device.cpp" />
+    <ClCompile Include="Source\GFX\GraphicsPipeline.cpp" />
+    <ClCompile Include="Source\Input\InputSystem.cpp" />
+    <ClCompile Include="Source\Core\Instance.cpp" />
     <ClCompile Include="Source\main.cpp" />
-    <ClCompile Include="Source\Mesh.cpp" />
-    <ClCompile Include="Source\Noise.cpp" />
-    <ClCompile Include="Source\Pipeline.cpp" />
-    <ClCompile Include="Source\Raytrace.cpp" />
-    <ClCompile Include="Source\Renderer.cpp" />
-    <ClCompile Include="Source\SimpleRenderSystem.cpp" />
-    <ClCompile Include="Source\Swapchain.cpp" />
-    <ClCompile Include="Source\Texture.cpp" />
-    <ClCompile Include="Source\Window.cpp" />
+    <ClCompile Include="Source\Perlin\Noise.cpp" />
+    <ClCompile Include="Source\Core\Pipeline.cpp" />
+    <ClCompile Include="Source\Util\Raytrace.cpp" />
+    <ClCompile Include="Source\GFX\Renderer.cpp" />
+    <ClCompile Include="Source\Systems\SimpleRenderSystem.cpp" />
+    <ClCompile Include="Source\Core\Swapchain.cpp" />
+    <ClCompile Include="Source\GFX\Texture.cpp" />
+    <ClCompile Include="Source\Core\Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Source\App.h" />
-    <ClInclude Include="Source\Block.h" />
-    <ClInclude Include="Source\Buffer.h" />
-    <ClInclude Include="Source\Camera.h" />
-    <ClInclude Include="Source\CameraController.h" />
-    <ClInclude Include="Source\ChunkMesh.h" />
-    <ClInclude Include="Source\ChunkManager.h" />
-    <ClInclude Include="Source\ChunkRenderer.h" />
+    <ClInclude Include="Source\Core\App.h" />
+    <ClInclude Include="Source\Block\Block.h" />
+    <ClInclude Include="Source\Core\Buffer.h" />
+    <ClInclude Include="Source\GFX\Camera.h" />
+    <ClInclude Include="Source\GFX\CameraController.h" />
+    <ClInclude Include="Source\Block\ChunkMesh.h" />
+    <ClInclude Include="Source\Block\ChunkManager.h" />
+    <ClInclude Include="Source\Systems\ChunkRenderer.h" />
     <ClInclude Include="Source\Common.h" />
-    <ClInclude Include="Source\Descriptors.h" />
-    <ClInclude Include="Source\Device.h" />
-    <ClInclude Include="Source\Events.h" />
-    <ClInclude Include="Source\GraphicsPipeline.h" />
-    <ClInclude Include="Source\InputSystem.h" />
-    <ClInclude Include="Source\Instance.h" />
-    <ClInclude Include="Source\Mesh.h" />
-    <ClInclude Include="Source\Noise.h" />
-    <ClInclude Include="Source\Pipeline.h" />
-    <ClInclude Include="Source\Raytrace.h" />
-    <ClInclude Include="Source\Renderer.h" />
-    <ClInclude Include="Source\RenderSystem.h" />
-    <ClInclude Include="Source\SimpleRenderSystem.h" />
-    <ClInclude Include="Source\Swapchain.h" />
-    <ClInclude Include="Source\Texture.h" />
-    <ClInclude Include="Source\Vertex.h" />
-    <ClInclude Include="Source\Window.h" />
+    <ClInclude Include="Source\Core\Descriptors.h" />
+    <ClInclude Include="Source\Core\Device.h" />
+    <ClInclude Include="Source\Core\Events.h" />
+    <ClInclude Include="Source\GFX\GraphicsPipeline.h" />
+    <ClInclude Include="Source\Input\InputSystem.h" />
+    <ClInclude Include="Source\Core\Instance.h" />
+    <ClInclude Include="Source\GFX\Mesh.h" />
+    <ClInclude Include="Source\Perlin\Noise.h" />
+    <ClInclude Include="Source\Core\Pipeline.h" />
+    <ClInclude Include="Source\Util\Raytrace.h" />
+    <ClInclude Include="Source\GFX\Renderer.h" />
+    <ClInclude Include="Source\GFX\RenderSystem.h" />
+    <ClInclude Include="Source\Systems\SimpleRenderSystem.h" />
+    <ClInclude Include="Source\Core\Swapchain.h" />
+    <ClInclude Include="Source\GFX\Texture.h" />
+    <ClInclude Include="Source\GFX\Vertex.h" />
+    <ClInclude Include="Source\Core\Window.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\chunk.frag" />
@@ -215,6 +215,7 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\statue.jpg" />
+    <Image Include="Resources\atlas.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

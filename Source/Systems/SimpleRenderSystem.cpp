@@ -1,5 +1,5 @@
 #include "SimpleRenderSystem.h"
-#include "Vertex.h"
+#include "GFX\Vertex.h"
 
 const std::vector<Vertex> vertices = {
 	{ {-0.5f, 0.f, -0.5f}, {0.f, 1.f, 0.f}, {1.f, 0.f, 0.f}, {0.f, 0.f} },

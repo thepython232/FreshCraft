@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Mesh.h"
-#include "Events.h"
+#include "GFX\Mesh.h"
+#include "Core\Events.h"
 
 constexpr int CHUNK_SIZE = 16;
 constexpr int MAX_BLOCK_HEIGHT = 256;

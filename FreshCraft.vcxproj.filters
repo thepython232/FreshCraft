@@ -42,144 +42,144 @@
     <ClCompile Include="Source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Source\App.cpp">
+    <ClCompile Include="Source\Core\App.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Buffer.cpp">
+    <ClCompile Include="Source\Core\Buffer.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Descriptors.cpp">
+    <ClCompile Include="Source\Core\Descriptors.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Device.cpp">
+    <ClCompile Include="Source\Core\Device.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Instance.cpp">
+    <ClCompile Include="Source\Core\Instance.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Pipeline.cpp">
+    <ClCompile Include="Source\Core\Pipeline.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Swapchain.cpp">
+    <ClCompile Include="Source\Core\Swapchain.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Window.cpp">
+    <ClCompile Include="Source\Core\Window.cpp">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\GraphicsPipeline.cpp">
+    <ClCompile Include="Source\GFX\GraphicsPipeline.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Mesh.cpp">
+    <ClCompile Include="Source\GFX\Renderer.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Renderer.cpp">
+    <ClCompile Include="Source\GFX\Texture.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Texture.cpp">
-      <Filter>Source Files\GFX</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\SimpleRenderSystem.cpp">
+    <ClCompile Include="Source\Systems\SimpleRenderSystem.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ChunkMesh.cpp">
+    <ClCompile Include="Source\Block\ChunkMesh.cpp">
       <Filter>Source Files\Block</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ChunkManager.cpp">
+    <ClCompile Include="Source\Block\ChunkManager.cpp">
       <Filter>Source Files\Block</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ChunkRenderer.cpp">
+    <ClCompile Include="Source\Systems\ChunkRenderer.cpp">
       <Filter>Source Files\Systems</Filter>
     </ClCompile>
-    <ClCompile Include="Source\CameraController.cpp">
+    <ClCompile Include="Source\GFX\CameraController.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
-    <ClCompile Include="Source\InputSystem.cpp">
+    <ClCompile Include="Source\Input\InputSystem.cpp">
       <Filter>Source Files\Input</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Raytrace.cpp">
+    <ClCompile Include="Source\Util\Raytrace.cpp">
       <Filter>Source Files\Util</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Noise.cpp">
+    <ClCompile Include="Source\Perlin\Noise.cpp">
       <Filter>Source Files\Perlin</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\GFX\Mesh.cpp">
+      <Filter>Source Files\GFX</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Common.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="Source\App.h">
+    <ClInclude Include="Source\Core\App.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Buffer.h">
+    <ClInclude Include="Source\Core\Buffer.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Descriptors.h">
+    <ClInclude Include="Source\Core\Descriptors.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Device.h">
+    <ClInclude Include="Source\Core\Device.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Events.h">
+    <ClInclude Include="Source\Core\Events.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Instance.h">
+    <ClInclude Include="Source\Core\Instance.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Pipeline.h">
+    <ClInclude Include="Source\Core\Pipeline.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Swapchain.h">
+    <ClInclude Include="Source\Core\Swapchain.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Window.h">
+    <ClInclude Include="Source\Core\Window.h">
       <Filter>Source Files\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\GraphicsPipeline.h">
+    <ClInclude Include="Source\GFX\GraphicsPipeline.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Mesh.h">
+    <ClInclude Include="Source\GFX\Mesh.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Renderer.h">
+    <ClInclude Include="Source\GFX\Renderer.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\RenderSystem.h">
+    <ClInclude Include="Source\GFX\RenderSystem.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Texture.h">
+    <ClInclude Include="Source\GFX\Texture.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Vertex.h">
+    <ClInclude Include="Source\GFX\Vertex.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\SimpleRenderSystem.h">
+    <ClInclude Include="Source\Systems\SimpleRenderSystem.h">
       <Filter>Source Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ChunkMesh.h">
+    <ClInclude Include="Source\Block\ChunkMesh.h">
       <Filter>Source Files\Block</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ChunkManager.h">
+    <ClInclude Include="Source\Block\ChunkManager.h">
       <Filter>Source Files\Block</Filter>
     </ClInclude>
-    <ClInclude Include="Source\ChunkRenderer.h">
+    <ClInclude Include="Source\Systems\ChunkRenderer.h">
       <Filter>Source Files\Systems</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Camera.h">
+    <ClInclude Include="Source\GFX\Camera.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\CameraController.h">
+    <ClInclude Include="Source\GFX\CameraController.h">
       <Filter>Source Files\GFX</Filter>
     </ClInclude>
-    <ClInclude Include="Source\InputSystem.h">
+    <ClInclude Include="Source\Input\InputSystem.h">
       <Filter>Source Files\Input</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Block.h">
+    <ClInclude Include="Source\Block\Block.h">
       <Filter>Source Files\Block</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Raytrace.h">
+    <ClInclude Include="Source\Util\Raytrace.h">
       <Filter>Source Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Noise.h">
+    <ClInclude Include="Source\Perlin\Noise.h">
       <Filter>Source Files\Perlin</Filter>
     </ClInclude>
   </ItemGroup>
@@ -196,6 +196,9 @@
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\statue.jpg">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Resources\atlas.png">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

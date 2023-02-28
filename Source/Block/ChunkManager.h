@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Device.h"
-#include "Events.h"
+#include "Core\Device.h"
+#include "Core\Events.h"
 #include "ChunkMesh.h"
 #include "Block.h"
-#include "Noise.h"
+#include "Perlin\Noise.h"
 
 constexpr int RENDER_DISTANCE = 8;
 

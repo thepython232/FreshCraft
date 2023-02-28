@@ -1,7 +1,5 @@
 #include "Instance.h"
 #include "GLFW/glfw3.h"
-#include <iostream>
-#include <stdexcept>
 
 Instance::Instance() {
 	CreateInstance();

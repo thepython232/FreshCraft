@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Device.h"
+#include "Core\Device.h"
 
 class Texture {
 public:

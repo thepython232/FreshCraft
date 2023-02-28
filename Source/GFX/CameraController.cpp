@@ -1,7 +1,6 @@
 #include "CameraController.h"
 #include "glm/gtx/norm.hpp"
-#include "ChunkManager.h"
-#include "Raytrace.h"
+#include "Block\ChunkManager.h"
 
 const float MOVE_SPEED = 0.1f;
 const float PAN_SPEED = 3.f;

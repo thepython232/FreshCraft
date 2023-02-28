@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Renderer.h"
-#include "Camera.h"
+#include "GFX\Renderer.h"
+#include "GFX\Camera.h"
 
 struct GlobalUBO {
 	glm::mat4 view;

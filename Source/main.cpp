@@ -2,7 +2,7 @@
 #include <iostream>
 #include <stdlib.h>
 
-#include "App.h"
+#include "Core\App.h"
 
 int main(int argc, char* argv[]) {
 	try {

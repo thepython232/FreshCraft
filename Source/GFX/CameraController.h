@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Camera.h"
-#include "Events.h"
+#include "Core\Events.h"
 
 class CameraController {
 public:

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Events.h"
+#include "Core\Events.h"
 
 class RenderSystemBase {
 public:
@@ -16,6 +16,7 @@ public:
 	virtual float TickWeight() const = 0;
 };
 
+//TODO: can this be reinterpret_casted into an R* ? That would avoid passing this to the ctor
 template<typename R>
 class RenderSystem : public RenderSystemBase {
 public:

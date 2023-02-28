@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Device.h"
-#include "Swapchain.h"
+#include "Core\Device.h"
+#include "Core\Swapchain.h"
 #include "Texture.h"
 
 class Renderer {

@@ -1,6 +1,5 @@
 #include "ChunkManager.h"
-#include "Raytrace.h"
-#include "glm/gtx/integer.hpp"
+#include "Util\Raytrace.h"
 
 ChunkManager::ChunkManager(Device& device) : device(device) {
 	
