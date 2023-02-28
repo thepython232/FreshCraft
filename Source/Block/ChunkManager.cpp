@@ -137,13 +137,24 @@ void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
 			for (int z = 0; z < CHUNK_SIZE; z++) {
 				glm::ivec2 block{ x + chunkID.x * CHUNK_SIZE, z + chunkID.y * CHUNK_SIZE };
 				int height = this->height.fractal(14, block.x, block.y) * 26.f + 70.f;
-				height += this->detail.fractal(6, block.x, block.y) * 4.f;
+				int sandNoise = sand.noise(block.x, block.y) * 2.f;
+				//height += this->detail.fractal(6, block.x, block.y) * 4.f;
 				for (int y = 0; y < MAX_BLOCK_HEIGHT; y++) {
 					if (y == height) {
-						world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 1; //Grass
+						if (y > 66 + sandNoise) {
+							world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 1; //Grass
+						}
+						else {
+							world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 7; //Sand
+						}
 					}
 					else if (y > height - 2 && y < height) {
-						world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 2; //Dirt
+						if (y > 66 + sandNoise) {
+							world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 2; //Dirt
+						}
+						else {
+							world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 7; //Sand
+						}
 					}
 					else if (y < height) {
 						world[chunkID][y * CHUNK_SIZE * CHUNK_SIZE + z * CHUNK_SIZE + x] = 3; //Stone
@@ -157,9 +168,9 @@ void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
 				}
 
 				if (height > 66) {
-					//TODO: generate structures
-					//TODO: also generate structure in surrounding chunks to avoid seams across chunk borders
 					//TODO: better way of generating random numbers
+					//TODO: way of not having to write into nearby chunks that may have already been meshed
+					//because structures exceeding CHUNK_SIZE will still break
 					srand(std::hash<glm::ivec2>{}(block));
 					if (rand() / (float)RAND_MAX > 0.992) {
 						for (int y = height; y < height + 5; ++y) {
@@ -173,9 +184,11 @@ void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
 									glm::ivec3 leafBlockPos{ leafx + x, height + y, leafz + z }; //Local to this chunk
 									if (leafBlockPos.x >= 0 && leafBlockPos.x < CHUNK_SIZE && leafBlockPos.z >= 0 && leafBlockPos.z < CHUNK_SIZE) {
 										if (leafx == 0 && leafz == 0 && y == 4) continue; //Leave one log piece
+										if ((leafx == -2 || leafx == 2) && (leafz == -2 || leafz == 2) && rand() / (float)RAND_MAX > 0.7) continue;
 										world[chunkID][leafBlockPos.y * CHUNK_SIZE * CHUNK_SIZE + leafBlockPos.z * CHUNK_SIZE + leafBlockPos.x] = 6; //Leaves
 									}
 									else {
+										if ((leafx == -2 || leafx == 2) && (leafz == -2 || leafz == 2) && rand() / (float)RAND_MAX > 0.7) continue;
 										//Figure out what chunk to write to
 										glm::ivec2 chunkID;
 										glm::ivec3 blockPos = BlockToChunk(glm::ivec3(block.x + leafx, height + y, block.y + leafz), chunkID);
@@ -192,9 +205,11 @@ void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
 								for (int y = 6; y < 8; y++) {
 									glm::ivec3 leafBlockPos{ leafx + x, height + y, leafz + z }; //Local to this chunk
 									if (leafBlockPos.x >= 0 && leafBlockPos.x < CHUNK_SIZE && leafBlockPos.z >= 0 && leafBlockPos.z < CHUNK_SIZE) {
+										if (y == 7 && (leafx == -1 || leafx == 1) && (leafz == -1 || leafz == 1) && rand() / (float)RAND_MAX > 0.75) continue;
 										world[chunkID][leafBlockPos.y * CHUNK_SIZE * CHUNK_SIZE + leafBlockPos.z * CHUNK_SIZE + leafBlockPos.x] = 6; //Leaves
 									}
 									else {
+										if (y == 7 && (leafx == -1 || leafx == 1) && (leafz == -1 || leafz == 1) && rand() / (float)RAND_MAX > 0.75) continue;
 										//Figure out what chunk to write to
 										glm::ivec2 chunkID;
 										glm::ivec3 blockPos = BlockToChunk(glm::ivec3(block.x + leafx, height + y, block.y + leafz), chunkID);

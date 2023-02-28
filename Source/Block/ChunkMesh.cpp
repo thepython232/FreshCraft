@@ -10,7 +10,8 @@ const std::vector<Block> blocks = {
 	{ "Stone", { { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
 	{ "Water", { { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
 	{ "Log", { { 6.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 6.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
-	{ "Leaves", { { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE } }, Block::HOLES }
+	{ "Leaves", { { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE } }, Block::HOLES },
+	{ "Sand", { { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } }
 };
 
 //Block mesh constants

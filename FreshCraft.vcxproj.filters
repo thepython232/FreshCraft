@@ -34,7 +34,7 @@
     <Filter Include="Source Files\Util">
       <UniqueIdentifier>{c2966068-9ee5-460d-bbde-6de29258a31e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Perlin">
+    <Filter Include="Source Files\Noise">
       <UniqueIdentifier>{24fc5477-e855-4aef-8b54-ce3a03d654db}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
@@ -96,8 +96,8 @@
     <ClCompile Include="Source\Util\Raytrace.cpp">
       <Filter>Source Files\Util</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Perlin\Noise.cpp">
-      <Filter>Source Files\Perlin</Filter>
+    <ClCompile Include="Source\Noise\Noise.cpp">
+      <Filter>Source Files\Noise</Filter>
     </ClCompile>
     <ClCompile Include="Source\GFX\Mesh.cpp">
       <Filter>Source Files\GFX</Filter>
@@ -179,8 +179,8 @@
     <ClInclude Include="Source\Util\Raytrace.h">
       <Filter>Source Files\Util</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Perlin\Noise.h">
-      <Filter>Source Files\Perlin</Filter>
+    <ClInclude Include="Source\Noise\Noise.h">
+      <Filter>Source Files\Noise</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
