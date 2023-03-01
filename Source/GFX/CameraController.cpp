@@ -79,12 +79,19 @@ void CameraController::Update(const UpdateEvent& event) {
 		glm::vec3 dir = camera.Forward();
 		BlockHitInfo info{};
 		if (manager.VoxelRaytrace(pos, dir, MAX_INTERACT_DISTANCE, info)) {
-			manager.PlaceBlock(info.blockPos + glm::ivec3(info.normal), 1, event);
+			manager.PlaceBlock(info.blockPos + glm::ivec3(info.normal), selectedBlock + 1, event);
 		}
 	}
 	else {
 		breakCooldown += event.deltaTime;
 	}
+
+	selectedBlock += int(event.input.GetScrollDelta().y);
+	selectedBlock %= blocks.size();
+	//std::cout << selectedBlock << std::endl;
+
+	//if (event.input.GetScrollDelta().y > 0)
+	//	std::cout << blocks[selectedBlock].name << std::endl;
 }
 
 void CameraController::Tick(const TickEvent& event) {

@@ -218,6 +218,9 @@
     <Image Include="Resources\statue.jpg" />
     <Image Include="Resources\atlas.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="Plan.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

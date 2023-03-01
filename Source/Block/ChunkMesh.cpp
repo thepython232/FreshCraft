@@ -9,10 +9,13 @@ const std::vector<Block> blocks = {
 	{ "Grass", { { 2.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 0.f }, { 0.f, 0.f } } },
 	{ "Dirt", { { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
 	{ "Stone", { { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
-	{ "Water", { { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f } }, Block::TRANSPARENT },
+	{ "Water", { { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 3.f / (float)TEXTURE_ATLAS_SIZE, 0.f } }, Block::Flags(Block::TRANSPARENT | Block::LIQUID) },
 	{ "Log", { { 6.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 6.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 7.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
 	{ "Leaves", { { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE } }, Block::HOLES },
-	{ "Sand", { { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } }
+	{ "Sand", { { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 0.f } } },
+	{ "Planks", { { 4.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 4.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE } } },
+	{ "Cobblestone", { { 5.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 5.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE } } },
+	{ "Glass", { { 1.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE }, { 1.f / (float)TEXTURE_ATLAS_SIZE, 1.f / (float)TEXTURE_ATLAS_SIZE } }, Block::TRANSPARENT }
 };
 
 //Block mesh constants
@@ -103,7 +106,7 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 								for (int j = 0; j < 4; j++) {
 									Vertex vertex{};
 									vertex.pos = blockCorners[blockIndices[s * 4 + j]] + blockPos;
-									if (vertex.pos.y == 1.f + blockPos.y) {
+									if ((block.flags & Block::LIQUID) && vertex.pos.y == 1.f + blockPos.y) {
 										vertex.pos.y -= 0.0625f;
 									}
 									vertex.color = { 1.f, 1.f, 1.f };
@@ -117,6 +120,9 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 								for (int j = 0; j < 4; j++) {
 									Vertex vertex{};
 									vertex.pos = blockCorners[blockIndices[s * 4 + j]] + blockPos;
+									if ((block.flags & Block::LIQUID) && vertex.pos.y == 1.f + blockPos.y) {
+										vertex.pos.y -= 0.0625f;
+									}
 									vertex.color = { 1.f, 1.f, 1.f };
 									vertex.normal = blockNormals[s];
 									vertex.uv = blockUvs[j] + block.textureOffsets[s];

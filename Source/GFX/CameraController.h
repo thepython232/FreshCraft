@@ -17,4 +17,5 @@ private:
 	float sprintCooldown = 0.f;
 	bool sprinting = false;
 	float breakCooldown = 0.f;
+	int selectedBlock = 0;
 };

@@ -87,24 +87,28 @@ void Window::RefreshCallback(GLFWwindow* window) {
 
 void Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	Window* ptr = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	if (action != GLFW_REPEAT && key != GLFW_KEY_UNKNOWN) {
+	if (ptr->app.IsInitialized() && action != GLFW_REPEAT && key != GLFW_KEY_UNKNOWN) {
 		ptr->inputSystem->HandleKey(key, scancode, action, mods);
 	}
 }
 
 void Window::MouseButtonCallback(GLFWwindow* window, int button, int action, int mods) {
 	Window* ptr = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	if (action != GLFW_REPEAT) {
+	if (ptr->app.IsInitialized() && action != GLFW_REPEAT) {
 		ptr->inputSystem->HandleMouseButton(button, action, mods);
 	}
 }
 
 void Window::MouseMoveCallback(GLFWwindow* window, double xpos, double ypos) {
 	Window* ptr = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	ptr->inputSystem->HandleMouseMove(static_cast<float>(xpos), static_cast<float>(ypos));
+	if (ptr->app.IsInitialized()) {
+		ptr->inputSystem->HandleMouseMove(static_cast<float>(xpos), static_cast<float>(ypos));
+	}
 }
 
 void Window::MouseScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
 	Window* ptr = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	ptr->inputSystem->HandleMouseScroll(static_cast<float>(xoffset), static_cast<float>(yoffset));
+	if (ptr->app.IsInitialized()) {
+		ptr->inputSystem->HandleMouseScroll(static_cast<float>(xoffset), static_cast<float>(yoffset));
+	}
 }

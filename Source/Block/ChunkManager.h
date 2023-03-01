@@ -6,7 +6,7 @@
 #include "Block.h"
 #include "Noise\Noise.h"
 
-constexpr int RENDER_DISTANCE = 16;
+constexpr int RENDER_DISTANCE = 12;
 
 struct ChunkComparator {
 	bool operator()(const glm::ivec2& a, const glm::ivec2& b) const {

@@ -1,0 +1,15 @@
+THE BIG TODOS:
+ - Sort transparent blocks
+ - UI System - crosshair, block selector, and block outline
+ - Skybox renderer - sun and stars
+ - Player Physics
+ - More blocks
+ - Renderer with AO, Deferred rendering, specular (from texture atlas), normal mapping, bloom and HDR
+ - Shadow mapping
+ - Lights - use descriptor arrays / storage buffers
+ - Custom allocator for chunks (both DRAM and VRAM)
+ - More Blocks
+ - Biomes - either perlin or worley noise
+ - Seperate water shader
+ - Fake water physics?
+ - Better structure generation
