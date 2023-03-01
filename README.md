@@ -16,6 +16,8 @@ It features infinite worlds, structures, placing/destroying blocks, and transpar
 - Glass
 - Gold Ore
 - Iron Ore
+- Wood Planks
+- Cobblestone
 
 # Compiling:
 Either compile using the supplied MSVC project files or do it yourself using g++ or mingw. Just link the VulkanSDK, GLFW3, GLM, STB Image, and TinyOBJ Loader. The Source\ directory also must be provided as an include directory.
