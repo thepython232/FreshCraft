@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GFX\Mesh.h"
+#include "Core\Buffer.h"
 #include "Core\Events.h"
 
 constexpr int CHUNK_SIZE = 16;
@@ -25,8 +25,9 @@ public:
 	bool Loaded() const { return loaded; }
 
 private:
-	std::vector<std::unique_ptr<Mesh>> mesh;
-	std::vector<std::unique_ptr<Mesh>> transparentMesh;
+	std::vector<std::unique_ptr<Buffer>> meshData;
+	VkDeviceSize indexOffset, transparentVertexOffset, transparentIndexOffset;
+
 	uint32_t mostRecentMesh;
 	glm::ivec2 pos;
 	bool shouldUpdate = true;

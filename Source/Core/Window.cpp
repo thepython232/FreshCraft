@@ -87,7 +87,7 @@ void Window::RefreshCallback(GLFWwindow* window) {
 
 void Window::KeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	Window* ptr = reinterpret_cast<Window*>(glfwGetWindowUserPointer(window));
-	if (action != GLFW_REPEAT) {
+	if (action != GLFW_REPEAT && key != GLFW_KEY_UNKNOWN) {
 		ptr->inputSystem->HandleKey(key, scancode, action, mods);
 	}
 }

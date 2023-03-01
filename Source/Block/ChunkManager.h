@@ -37,6 +37,7 @@ public:
 	void PlaceBlock(const glm::ivec3& pos, BlockID block, const UpdateEvent& event);
 
 	inline BlockID BlockAt(const glm::ivec3& pos);
+	inline uint32_t NumBlocks(const glm::ivec2& chunk) const;
 
 private:
 	void GenerateChunk(const glm::ivec2& chunkID);
@@ -50,7 +51,7 @@ private:
 	std::unordered_map<glm::ivec2, std::unique_ptr<ChunkMesh>> chunks;
 	std::vector<glm::ivec2> chunksToUpdate;
 	Device& device;
-	SimplexNoise height{ 0.006f, 10.f, 2.1f, 0.45f }, detail{ 0.002f, 10.f, 1.8f, 0.6f }, sand{ 0.006f, 1.f };
+	SimplexNoise height{ 0.006f, 10.f, 2.1f, 0.45f }, detail{ 1.f, 1.f, 1.8f, 0.6f }, sand{ 0.006f, 1.f };
 	friend class ChunkRenderer;
 };
 
@@ -81,5 +82,17 @@ inline BlockID ChunkManager::BlockAt(const glm::ivec3& pos) {
 		return BlockAt(pos);
 	}
 
-	return world.find(chunkID)->second[blockPos.y * CHUNK_SIZE * CHUNK_SIZE + blockPos.z * CHUNK_SIZE + blockPos.x];
+	return world[chunkID][blockPos.y * CHUNK_SIZE * CHUNK_SIZE + blockPos.z * CHUNK_SIZE + blockPos.x];
+}
+
+inline uint32_t ChunkManager::NumBlocks(const glm::ivec2& chunk) const {
+	if (!world.contains(chunk)) return 0;
+
+	uint32_t num = 0;
+	auto& chunkData = world.find(chunk)->second;
+	for (int i = 0; i < CHUNK_SIZE * CHUNK_SIZE * MAX_BLOCK_HEIGHT; i++) {
+		if (chunkData[i] > 0) num++;
+	}
+
+	return num;
 }

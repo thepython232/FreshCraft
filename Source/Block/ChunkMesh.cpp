@@ -1,6 +1,7 @@
 #include "ChunkMesh.h"
 #include "Block.h"
 #include "ChunkManager.h"
+#include "GFX/Vertex.h"
 
 constexpr int TEXTURE_ATLAS_SIZE = 8;
 
@@ -56,8 +57,7 @@ const std::vector<uint32_t> indices = {
 };
 
 ChunkMesh::ChunkMesh(Device& device, glm::ivec2 pos, ChunkManager& manager) : device(device), pos(pos), manager(manager) {
-	mesh.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
-	transparentMesh.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
+	meshData.resize(Swapchain::MAX_FRAMES_IN_FLIGHT);
 }
 
 ChunkMesh::~ChunkMesh() {
@@ -66,11 +66,15 @@ ChunkMesh::~ChunkMesh() {
 
 void ChunkMesh::Update(const UpdateEvent& event) {
 	std::vector<Vertex> vertices;
+	vertices.reserve(manager.NumBlocks(pos) * 24);
 	std::vector<uint32_t> indices;
+	indices.reserve(manager.NumBlocks(pos) * 36);
 
 	std::vector<Vertex> transparentVertices;
+	transparentVertices.reserve(1024);
 	std::vector<uint32_t> transparentIndices;
-
+	transparentIndices.reserve(1536);
+	
 	for (int x = 0; x < CHUNK_SIZE; x++) {
 		for (int z = 0; z < CHUNK_SIZE; z++) {
 			for (int y = 0; y < MAX_BLOCK_HEIGHT; y++) {
@@ -86,12 +90,12 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 							) {
 							if (block.flags & Block::TRANSPARENT) {
 								for (int i = 0; i < 6; i++) {
-									transparentIndices.push_back(::indices[i] + transparentVertices.size());
+									transparentIndices.emplace_back(::indices[i] + transparentVertices.size());
 								}
 							}
 							else {
 								for (int i = 0; i < 6; i++) {
-									indices.push_back(::indices[i] + vertices.size());
+									indices.emplace_back(::indices[i] + vertices.size());
 								}
 							}
 
@@ -106,7 +110,7 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 									vertex.normal = blockNormals[s];
 									vertex.uv = blockUvs[j] + block.textureOffsets[s];
 
-									transparentVertices.push_back(vertex);
+									transparentVertices.emplace_back(vertex);
 								}
 							}
 							else {
@@ -117,7 +121,7 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 									vertex.normal = blockNormals[s];
 									vertex.uv = blockUvs[j] + block.textureOffsets[s];
 
-									vertices.push_back(vertex);
+									vertices.emplace_back(vertex);
 								}
 							}
 						}
@@ -127,24 +131,51 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 		}
 	}
 
-	mesh[event.frameIndex] = std::make_unique<Mesh>(device, vertices, indices);
-	if (transparentVertices.size() > 0) {
-		transparentMesh[event.frameIndex] = std::make_unique<Mesh>(device, transparentVertices, transparentIndices);
-	}
+	//TODO: use a custom allocator for the buffers
+	VkDeviceSize bufferSize = sizeof(Vertex) * (vertices.size() + transparentVertices.size()) + sizeof(uint32_t) * (indices.size() + transparentIndices.size());
+
+	meshData[event.frameIndex] = std::make_unique<Buffer>(
+		device,
+		bufferSize,
+		1,
+		VK_BUFFER_USAGE_VERTEX_BUFFER_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT,
+		VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT,
+		Device::QueueFamilyIndices::Graphics
+		);
+
+	indexOffset = vertices.size() * sizeof(Vertex);
+	transparentVertexOffset = indexOffset + indices.size() * sizeof(uint32_t);
+	transparentIndexOffset = transparentVertexOffset + transparentVertices.size() * sizeof(Vertex);
+
+	meshData[event.frameIndex]->Map();
+	meshData[event.frameIndex]->WriteToBuffer((void*)vertices.data(), vertices.size() * sizeof(Vertex), 0);
+	meshData[event.frameIndex]->WriteToBuffer((void*)indices.data(), indices.size() * sizeof(uint32_t), indexOffset);
+	meshData[event.frameIndex]->WriteToBuffer((void*)transparentVertices.data(), transparentVertices.size() * sizeof(Vertex), transparentVertexOffset);
+	meshData[event.frameIndex]->WriteToBuffer((void*)transparentIndices.data(), transparentIndices.size() * sizeof(uint32_t), transparentIndexOffset);
+	meshData[event.frameIndex]->UnMap();
+	
 	mostRecentMesh = event.frameIndex;
 	shouldUpdate = false;
 	loaded = true;
 }
 
 void ChunkMesh::Draw(const RenderEvent& event) {
-	mesh[mostRecentMesh]->Draw(event.commandBuffer);
+	VkBuffer vertexBuffer[] = { meshData[mostRecentMesh]->GetBuffer() };
+	VkDeviceSize offset[] = { 0 };
+	vkCmdBindVertexBuffers(event.commandBuffer, 0, 1, vertexBuffer, offset);
+	vkCmdBindIndexBuffer(event.commandBuffer, meshData[mostRecentMesh]->GetBuffer(), indexOffset, VK_INDEX_TYPE_UINT32);
+	vkCmdDrawIndexed(event.commandBuffer, (transparentVertexOffset - indexOffset) / sizeof(uint32_t), 1, 0, 0, 0);
 	//TODO:
 	//mesh[mostRecentMesh].reset();
 }
 
 void ChunkMesh::DrawTransparent(const RenderEvent& event) {
-	if (transparentMesh[mostRecentMesh] != nullptr) {
-		transparentMesh[mostRecentMesh]->Draw(event.commandBuffer);
+	if (transparentIndexOffset < meshData[mostRecentMesh]->GetBufferSize()) {
+		VkBuffer vertexBuffer[] = { meshData[mostRecentMesh]->GetBuffer() };
+		VkDeviceSize offset[] = { transparentVertexOffset };
+		vkCmdBindVertexBuffers(event.commandBuffer, 0, 1, vertexBuffer, offset);
+		vkCmdBindIndexBuffer(event.commandBuffer, meshData[mostRecentMesh]->GetBuffer(), transparentIndexOffset, VK_INDEX_TYPE_UINT32);
+		vkCmdDrawIndexed(event.commandBuffer, (meshData[mostRecentMesh]->GetBufferSize() - transparentIndexOffset) / sizeof(uint32_t), 1, 0, 0, 0);
 	}
 	//TODO:
 	//mesh[mostRecentMesh].reset();

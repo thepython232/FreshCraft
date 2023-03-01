@@ -24,7 +24,7 @@ void main() {
 		discard;
 	else
 		outColor.a = 1.0;
-	outColor.xyz *= max(dot(normal, normalize(vec3(0.3, 0.6, -1.0))), 0.2);
+	outColor.xyz *= max(dot(normal, normalize(vec3(0.1, 0.6, -1.0))), 0.2);
 
 	float dist = (length(pos - ubo.invView[3].xyz) - ubo.fogNear) / ubo.fogDist;
 	dist = clamp(dist, 0.0, 1.0);

@@ -47,8 +47,10 @@ bool ChunkManager::VoxelRaytrace(glm::vec3 pos, const glm::vec3& dir, float tMax
 	glm::vec3 tmpMin = pos;
 	glm::vec3 tmpMax = pos + dir * tMax;
 
-	glm::ivec3 min = glm::min(tmpMin, tmpMax);
-	glm::ivec3 max = glm::max(tmpMin, tmpMax);
+	glm::ivec3 min = glm::ivec3(glm::min(tmpMin.x, tmpMax.x), glm::min(tmpMin.y, tmpMax.y), glm::min(tmpMin.z, tmpMax.z));
+	min -= glm::ivec3(1);
+	glm::ivec3 max = glm::ivec3(glm::max(tmpMin.x, tmpMax.x), glm::max(tmpMin.y, tmpMax.y), glm::max(tmpMin.z, tmpMax.z));
+	max += glm::ivec3(1);
 
 	BlockHitInfo minInfo;
 	float minDist = tMax;
@@ -64,9 +66,9 @@ bool ChunkManager::VoxelRaytrace(glm::vec3 pos, const glm::vec3& dir, float tMax
 					glm::vec3 minBounds = glm::vec3{ blockPos };
 					glm::vec3 maxBounds = glm::vec3{ blockPos } + glm::vec3{ 1.f };
 
-					RectHit hit{};
+					RectHit hit;
 					if (RectRaytrace(pos, dir, minBounds, maxBounds, hit)) {
-						if (hit.t < minDist) {
+						if (hit.t < minDist && hit.t > 0.f) {
 							minInfo.blockPos = blockPos;
 							minInfo.chunkID = chunkID;
 							minInfo.blockID = world.find(chunkID)->second[chunkBlockPos.y * CHUNK_SIZE * CHUNK_SIZE + chunkBlockPos.z * CHUNK_SIZE + chunkBlockPos.x];
@@ -135,13 +137,14 @@ void ChunkManager::PlaceBlock(const glm::ivec3& pos, BlockID block, const Update
 }
 
 void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
-	auto start = std::chrono::high_resolution_clock::now();
-
 	if (!world.contains(chunkID) || loadedChunks[chunkID] == false) {
 		for (int x = 0; x < CHUNK_SIZE; x++) {
 			for (int z = 0; z < CHUNK_SIZE; z++) {
 				glm::ivec2 block{ x + chunkID.x * CHUNK_SIZE, z + chunkID.y * CHUNK_SIZE };
-				int height = this->height.fractal(14, block.x, block.y) * 26.f + 70.f;
+				int noise1 = this->detail.fractal(8, block.x, block.y);
+				int noise2 = this->detail.fractal(8, block.x, block.y);
+				int height = this->height.fractal(14, block.x + 80.f * noise1, block.y + 80.f * noise2) * 26.f + 70.f;
+				
 				int sandNoise = sand.noise(block.x, block.y) * 2.f;
 				//height += this->detail.fractal(6, block.x, block.y) * 4.f;
 				for (int y = 0; y < MAX_BLOCK_HEIGHT; y++) {
