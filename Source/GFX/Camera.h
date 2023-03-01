@@ -49,6 +49,8 @@ private:
 			xaxis.z, yaxis.z, zaxis.z, 0.f,
 			-glm::dot(xaxis, pos), -glm::dot(yaxis, pos), -glm::dot(zaxis, pos), 1.f
 		};
+
+		invView = glm::inverse(view);
 	}
 
 	glm::mat4 view, invView, proj;

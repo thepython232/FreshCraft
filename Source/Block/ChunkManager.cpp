@@ -12,16 +12,21 @@ void ChunkManager::Update(const UpdateEvent& event) {
 			chunkPos += glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
 			if (!chunks.contains(chunkPos)) {
 				chunks[chunkPos] = std::make_unique<ChunkMesh>(device, chunkPos, *this);
-				chunksToUpdate.insert(chunkPos);
+				chunksToUpdate.push_back(chunkPos);
 			}
 		}
 	}
 
 	for (const auto& kv : chunks) {
-		if (!chunksToUpdate.contains(kv.first) && kv.second->ShouldUpdate()) {
-			chunksToUpdate.insert(kv.first);
+		if (std::find(chunksToUpdate.begin(), chunksToUpdate.end(), kv.first) == chunksToUpdate.end()  && kv.second->ShouldUpdate()) {
+			chunksToUpdate.push_back(kv.first);
 		}
 	}
+
+	std::sort(chunksToUpdate.begin(), chunksToUpdate.end(), [&event](const glm::ivec2& a, const glm::ivec2& b) {
+		return glm::length(glm::vec2(a) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE)
+			< glm::length(glm::vec2(b) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE);
+		});
 
 	//Update closest chunks
 	if (!chunksToUpdate.empty()) {

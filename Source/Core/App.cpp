@@ -73,6 +73,10 @@ void App::ReDraw() {
 		ubo.view = camera.View();
 		ubo.invView = camera.InvView();
 		ubo.proj = camera.Proj();
+		ubo.fogClose = (RENDER_DISTANCE - 2.5f) * (float)CHUNK_SIZE;
+		ubo.fogDist = 10.f;
+		const float* color = renderer["Global"]["Color"].clearValue.color.float32;
+		ubo.fogColor = glm::vec4(color[0], color[1], color[2], 1.f);
 
 		uniformBuffers[frameIndex]->WriteToBuffer(&ubo);
 		uniformBuffers[frameIndex]->Flush();

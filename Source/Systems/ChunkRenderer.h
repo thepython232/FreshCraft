@@ -18,6 +18,7 @@ public:
 private:
 	std::unique_ptr<GraphicsPipeline> pipeline;
 	std::unique_ptr<GraphicsPipeline> wireframePipeline;
+	std::unique_ptr<GraphicsPipeline> transparentPipeline;
 	bool wireframe = false;
 	std::unique_ptr<DescriptorPool> pool;
 	std::unique_ptr<DescriptorSetLayout> layout;

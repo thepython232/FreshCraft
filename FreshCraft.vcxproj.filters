@@ -193,6 +193,9 @@
     <None Include="Shaders\wireframe.frag">
       <Filter>Shaders</Filter>
     </None>
+    <None Include="Shaders\transparent.frag">
+      <Filter>Shaders</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Image Include="Resources\statue.jpg">

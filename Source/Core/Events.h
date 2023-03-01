@@ -4,9 +4,11 @@
 #include "GFX\Camera.h"
 
 struct GlobalUBO {
-	glm::mat4 view;
-	glm::mat4 invView;
-	glm::mat4 proj;
+	alignas(16) glm::mat4 view;
+	alignas(16) glm::mat4 invView;
+	alignas(16) glm::mat4 proj;
+	alignas(4) float fogClose, fogDist;
+	alignas(16) glm::vec4 fogColor;
 };
 
 struct UpdateEvent {

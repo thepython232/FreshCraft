@@ -6,7 +6,7 @@
 #include "Block.h"
 #include "Noise\Noise.h"
 
-constexpr int RENDER_DISTANCE = 8;
+constexpr int RENDER_DISTANCE = 16;
 
 struct ChunkComparator {
 	bool operator()(const glm::ivec2& a, const glm::ivec2& b) const {
@@ -42,16 +42,15 @@ private:
 	void GenerateChunk(const glm::ivec2& chunkID);
 
 	//TODO: offload to a file when full
-	std::unordered_map<glm::ivec2, std::array<BlockID, CHUNK_SIZE* CHUNK_SIZE* MAX_BLOCK_HEIGHT>> world;
+	std::unordered_map<glm::ivec2, std::array<BlockID, CHUNK_SIZE * CHUNK_SIZE * MAX_BLOCK_HEIGHT>> world;
 	std::unordered_map<glm::ivec2, bool> loadedChunks;
 
 	//TOOD: because these don't actually have world data, if these get far enough from the player,
 	//they could be destroyed to conserve memory
 	std::unordered_map<glm::ivec2, std::unique_ptr<ChunkMesh>> chunks;
-	std::multiset<glm::ivec2, ChunkComparator> chunksToUpdate;
+	std::vector<glm::ivec2> chunksToUpdate;
 	Device& device;
 	SimplexNoise height{ 0.006f, 10.f, 2.1f, 0.45f }, detail{ 0.002f, 10.f, 1.8f, 0.6f }, sand{ 0.006f, 1.f };
-	unsigned int seed;
 	friend class ChunkRenderer;
 };
 

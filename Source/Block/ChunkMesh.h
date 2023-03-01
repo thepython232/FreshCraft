@@ -18,6 +18,7 @@ public:
 	~ChunkMesh();
 
 	void Draw(const RenderEvent& event);
+	void DrawTransparent(const RenderEvent& event);
 	void Update(const UpdateEvent& event);
 
 	bool ShouldUpdate() const { return shouldUpdate; }
@@ -25,6 +26,7 @@ public:
 
 private:
 	std::vector<std::unique_ptr<Mesh>> mesh;
+	std::vector<std::unique_ptr<Mesh>> transparentMesh;
 	uint32_t mostRecentMesh;
 	glm::ivec2 pos;
 	bool shouldUpdate = true;

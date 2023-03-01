@@ -35,7 +35,20 @@ ChunkRenderer::ChunkRenderer(Device& device, Renderer& renderer, PipelineCache& 
 
 	pipeline = std::make_unique<GraphicsPipeline>(device, layoutSettings, pipelineSettings, cache);
 
+	pipelineSettings.rasterization.cullMode = VK_CULL_MODE_NONE;
+	pipelineSettings.colorBlending.colorAttachments[0].srcColorBlendFactor = VK_BLEND_FACTOR_SRC_ALPHA;
+	pipelineSettings.colorBlending.colorAttachments[0].dstColorBlendFactor = VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+	pipelineSettings.colorBlending.colorAttachments[0].blendEnable = VK_TRUE;
+	pipelineSettings.colorBlending.colorAttachments[0].srcAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+	pipelineSettings.colorBlending.colorAttachments[0].dstAlphaBlendFactor = VK_BLEND_FACTOR_ONE;
+
+	pipelineSettings.shaders.pop_back();
+	pipelineSettings.shaders.push_back(Pipeline::Shader{ device, "Shaders\\transparent.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT });
+
+	transparentPipeline = std::make_unique<GraphicsPipeline>(device, layoutSettings, pipelineSettings, cache);
+
 	pipelineSettings.rasterization.polygonMode = VK_POLYGON_MODE_LINE;
+	pipelineSettings.rasterization.cullMode = VK_CULL_MODE_BACK_BIT;
 	pipelineSettings.rasterization.lineWidth = 1.f;
 
 	pipelineSettings.shaders.pop_back();
@@ -73,11 +86,32 @@ void ChunkRenderer::GlobalRender(RenderEvent& event) {
 	for (const auto& kv : manager.chunks) {
 		glm::ivec2 chunkPos = kv.first;
 		chunkPos -= glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
-		if (kv.second->Loaded()){//}&& glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
+		if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
 			ChunkPushConstants push{};
 			push.pos = kv.first;
-			vkCmdPushConstants(event.commandBuffer, wireframePipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);
+			vkCmdPushConstants(event.commandBuffer, pipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);
 			kv.second->Draw(event);
+			//For wireframe view, just render transparent meshes normally
+			if (wireframe) {
+				kv.second->DrawTransparent(event);
+			}
+		}
+	}
+
+	if (!wireframe) {
+		transparentPipeline->Bind(event.commandBuffer);
+		vkCmdBindDescriptorSets(event.commandBuffer, transparentPipeline->GetBindPoint(), transparentPipeline->GetLayout(), 0, 1, &event.globalSet, 0, nullptr);
+		vkCmdBindDescriptorSets(event.commandBuffer, transparentPipeline->GetBindPoint(), transparentPipeline->GetLayout(), 1, 1, &sets[event.frameIndex], 0, nullptr);
+
+		for (const auto& kv : manager.chunks) {
+			glm::ivec2 chunkPos = kv.first;
+			chunkPos -= glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
+			if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
+				ChunkPushConstants push{};
+				push.pos = kv.first;
+				vkCmdPushConstants(event.commandBuffer, transparentPipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);
+				kv.second->DrawTransparent(event);
+			}
 		}
 	}
 }
