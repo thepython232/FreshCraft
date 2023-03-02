@@ -11,7 +11,7 @@ const float PLACE_COOLDOWN = 0.08f;
 const float MAX_INTERACT_DISTANCE = 8.f;
 
 CameraController::CameraController(Camera& camera, ChunkManager& manager) : camera(camera), manager(manager) {
-
+	selectedBlock = 0;
 }
 
 void CameraController::Update(const UpdateEvent& event) {
@@ -88,7 +88,8 @@ void CameraController::Update(const UpdateEvent& event) {
 
 	selectedBlock += int(event.input.GetScrollDelta().y);
 	selectedBlock %= blocks.size();
-	//std::cout << selectedBlock << std::endl;
+
+	std::cout << selectedBlock << std::endl;
 
 	//if (event.input.GetScrollDelta().y > 0)
 	//	std::cout << blocks[selectedBlock].name << std::endl;

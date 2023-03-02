@@ -8,8 +8,6 @@ constexpr int MAX_BLOCK_HEIGHT = 256;
 
 using BlockID = unsigned char;
 
-class TerrainGenerator;
-
 extern const std::vector<struct Block> blocks;
 
 class ChunkMesh {
@@ -23,6 +21,13 @@ public:
 
 	bool ShouldUpdate() const { return shouldUpdate; }
 	bool Loaded() const { return loaded; }
+
+	//Resort transparent geometry
+	void Resort(const UpdateEvent& event);
+
+	struct Triangle {
+		uint32_t indices[3];
+	};
 
 private:
 	std::vector<std::unique_ptr<Buffer>> meshData;

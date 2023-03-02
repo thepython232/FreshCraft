@@ -38,6 +38,7 @@ public:
 
 	inline BlockID BlockAt(const glm::ivec3& pos);
 	inline uint32_t NumBlocks(const glm::ivec2& chunk) const;
+	uint32_t MaxBlockHeight(const glm::ivec2& chunk) const;
 
 private:
 	void GenerateChunk(const glm::ivec2& chunkID);

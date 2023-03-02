@@ -39,6 +39,12 @@ void ChunkManager::Update(const UpdateEvent& event) {
 
 		mesh.Update(event);
 	}
+
+	glm::ivec2 chunkID;
+	BlockToChunk(glm::ivec3(event.mainCamera.GetPos() - 8.f), chunkID);
+
+	if (chunks.contains(glm::ivec2(0, 0)) && chunks[glm::ivec2(0, 0)]->Loaded())
+		chunks[glm::ivec2(0, 0)]->Resort(event);
 }
 
 //TODO: broken
@@ -233,4 +239,20 @@ void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
 	}
 
 	loadedChunks[chunkID] = true;
+}
+
+uint32_t ChunkManager::MaxBlockHeight(const glm::ivec2& chunk) const {
+	if (!world.contains(chunk)) return 0;
+
+	int max = 0;
+	for (int y = 0; y < MAX_BLOCK_HEIGHT; y++) {
+		for (int i = 0; i < CHUNK_SIZE * CHUNK_SIZE; i++) {
+			if (world.find(chunk)->second[y * CHUNK_SIZE * CHUNK_SIZE + i] > 0) {
+				max = y;
+				break;
+			}
+		}
+	}
+
+	return max + 1;
 }

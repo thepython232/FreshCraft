@@ -121,9 +121,10 @@ public:
 			return *this;
 		}
 
-		Iterator& operator++(int) {
-			iter++;
-			return *this;
+		Iterator operator++(int) {
+			Iterator tmp = *this;
+			tmp.iter++;
+			return tmp;
 		}
 
 		bool operator!=(const Iterator& other) const {

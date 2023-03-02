@@ -13,3 +13,11 @@ THE BIG TODOS:
  - Seperate water shader
  - Fake water physics?
  - Better structure generation
+ - World Save System
+ - Sprites like flowers
+ - Fix transparency issues
+ - Animated blocks like water
+ - Slabs and Stairs - correct meshing
+
+ And finally,
+ MORE GAMEPLAY!

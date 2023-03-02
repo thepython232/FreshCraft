@@ -78,9 +78,11 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 	std::vector<uint32_t> transparentIndices;
 	transparentIndices.reserve(1536);
 	
+	int height = manager.MaxBlockHeight(pos);
+
 	for (int x = 0; x < CHUNK_SIZE; x++) {
 		for (int z = 0; z < CHUNK_SIZE; z++) {
-			for (int y = 0; y < MAX_BLOCK_HEIGHT; y++) {
+			for (int y = 0; y < height; y++) {
 				glm::vec3 blockPos{ x, y, z };
 				BlockID blockID = manager.BlockAt(glm::ivec3(x + this->pos.x * CHUNK_SIZE, y, z + this->pos.y * CHUNK_SIZE));
 				if (blockID > 0) {
@@ -185,4 +187,41 @@ void ChunkMesh::DrawTransparent(const RenderEvent& event) {
 	}
 	//TODO:
 	//mesh[mostRecentMesh].reset();
+}
+
+glm::vec3 Centroid(glm::vec3 a, glm::vec3 b, glm::vec3 c) {
+	return (a + b + c) / 3.f;
+}
+
+void ChunkMesh::Resort(const UpdateEvent& event) {
+	if (transparentVertexOffset != meshData[mostRecentMesh]->GetBufferSize()) {
+		uint32_t indexCount = (meshData[mostRecentMesh]->GetBufferSize() - transparentIndexOffset) / sizeof(uint32_t);
+		//Dump data out of buffer
+		meshData[mostRecentMesh]->Map(meshData[mostRecentMesh]->GetBufferSize() - transparentVertexOffset, transparentVertexOffset);
+		const Vertex* vertices = reinterpret_cast<const Vertex*>(meshData[mostRecentMesh]->GetMappedMemory());
+		uint32_t* indices = reinterpret_cast<uint32_t*>((char*)meshData[mostRecentMesh]->GetMappedMemory() + (transparentIndexOffset - transparentVertexOffset));
+
+		//List of triangle index references
+		std::vector<Triangle> tris;
+		for (uint32_t i = 0; i < indexCount; i += 3) {
+			tris.push_back({ { indices[i], indices[i + 1], indices[i + 2] } });
+		}
+
+		//Sort the tris
+		std::sort(tris.begin(), tris.end(), [&event, vertices, this](const Triangle& a, const Triangle& b) {
+			return glm::length(Centroid(
+				vertices[a.indices[0]].pos + glm::vec3(this->pos.x * CHUNK_SIZE - CHUNK_SIZE / 2, 0.f, this->pos.y * CHUNK_SIZE - CHUNK_SIZE / 2) - event.mainCamera.GetPos(),
+				vertices[a.indices[1]].pos + glm::vec3(this->pos.x * CHUNK_SIZE - CHUNK_SIZE / 2, 0.f, this->pos.y * CHUNK_SIZE - CHUNK_SIZE / 2) - event.mainCamera.GetPos(),
+				vertices[a.indices[2]].pos + glm::vec3(this->pos.x * CHUNK_SIZE - CHUNK_SIZE / 2, 0.f, this->pos.y * CHUNK_SIZE - CHUNK_SIZE / 2) - event.mainCamera.GetPos()
+			)) > glm::length(Centroid(
+				vertices[b.indices[0]].pos + glm::vec3(this->pos.x * CHUNK_SIZE, 0.f, this->pos.y * CHUNK_SIZE) - event.mainCamera.GetPos(),
+				vertices[b.indices[1]].pos + glm::vec3(this->pos.x * CHUNK_SIZE, 0.f, this->pos.y * CHUNK_SIZE) - event.mainCamera.GetPos(),
+				vertices[b.indices[2]].pos + glm::vec3(this->pos.x * CHUNK_SIZE, 0.f, this->pos.y * CHUNK_SIZE) - event.mainCamera.GetPos()
+			));
+			});
+
+		//Write the data back
+		meshData[mostRecentMesh]->WriteToBuffer((void*)tris.data(), indexCount * sizeof(uint32_t), transparentIndexOffset - transparentVertexOffset);
+		meshData[mostRecentMesh]->UnMap();
+	}
 }
