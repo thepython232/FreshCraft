@@ -1,11 +1,11 @@
 #include "Raytrace.h"
 
 bool RectRaytrace(const glm::vec3& pos, const glm::vec3& dir, const glm::vec3& min, const glm::vec3& max, RectHit& hitInfo) {
-	const glm::vec3 invDir = 1.f / dir;
+	glm::vec3 invDir = 1.f / dir;
 
 	//Check for zeros
-	if (std::isnan(invDir.x)) invDir.x == 0.f;
-	if (std::isnan(invDir.z)) invDir.z == 0.f;
+	if (std::isnan(invDir.x)) invDir.x = 0.f;
+	if (std::isnan(invDir.z)) invDir.z = 0.f;
 
 	float tx1 = (min.x - pos.x) * invDir.x;
 	float tx2 = (max.x - pos.x) * invDir.x;

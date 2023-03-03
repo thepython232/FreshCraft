@@ -1,23 +1,28 @@
 THE BIG TODOS:
- - Sort transparent blocks
  - UI System - crosshair, block selector, and block outline
- - Skybox renderer - sun and stars
+
+ FRESH - MAKE A STUPID UI SYSTEM.
+ SELECTING BLOCKS SUCKS!
+
+ - Skybox renderer - sun and stars (with fake sunset)
  - Player Physics
  - More blocks
- - Renderer with AO, Deferred rendering, specular (from texture atlas), normal mapping, bloom and HDR
+ - Renderer with AO, Deferred rendering, specular (from texture atlas), normal mapping, bloom and HDR, maybe PBR?
+ - Multisampling and Sample Rate Shading to improve textures significantly from afar
  - Shadow mapping
  - Lights - use descriptor arrays / storage buffers
  - Custom allocator for chunks (both DRAM and VRAM)
- - More Blocks
- - Biomes - either perlin or worley noise
+ - Biomes - either perlin or worley noise (maybe integrate structures into biome generation?)
  - Seperate water shader
  - Fake water physics?
  - Better structure generation
  - World Save System
  - Sprites like flowers
- - Fix transparency issues
- - Animated blocks like water
+ - Animated textures like water
  - Slabs and Stairs - correct meshing
+ - Particle System
+ - Entity System?
+ - Code for things like doors and chests that update every frame
 
  And finally,
  MORE GAMEPLAY!

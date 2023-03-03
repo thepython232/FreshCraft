@@ -117,6 +117,7 @@
       <LanguageStandard>stdcpp20</LanguageStandard>
       <AdditionalIncludeDirectories>C:\Users\Jacob Fresh\source\repos\FreshCraft\Source;C:\Dev\TinyOBJ;C:\Dev\STBImage;C:\Dev\glfw\include;C:\Dev\glm\include;C:\Dev\VulkanSDK\Include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

@@ -42,7 +42,7 @@
 #ifndef NDEBUG
 #define Assert(_c) if (!(_c)) std::cerr << "Assert Failed: " << __FILE__ << ": (" << __LINE__ << ") in " << __FUNCTION__ << ": " << #_c << "!" << std::endl
 #else
-#define Assert(_c) ((void*)0)
+#define Assert(_c) ((void)0)
 #endif
 
 template<glm::length_t L, typename T, glm::qualifier Q>

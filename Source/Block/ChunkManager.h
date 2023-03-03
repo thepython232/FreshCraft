@@ -7,6 +7,7 @@
 #include "Noise\Noise.h"
 
 constexpr int RENDER_DISTANCE = 12;
+constexpr int MAX_SORTED_CHUNKS = 2;
 
 struct BlockHitInfo {
 	glm::ivec2 chunkID;
@@ -47,7 +48,7 @@ private:
 	std::unordered_map<glm::ivec2, std::unique_ptr<ChunkMesh>> chunks;
 	std::vector<glm::ivec2> chunksToUpdate;
 	glm::ivec2 oldPlayerChunk;
-	glm::vec3 oldPlayerPos;
+	glm::ivec3 oldPlayerPos;
 	Device& device;
 	SimplexNoise height{ 0.006f, 10.f, 2.1f, 0.45f }, detail{ 1.f, 1.f, 1.8f, 0.6f }, sand{ 0.006f, 1.f };
 	friend class ChunkRenderer;

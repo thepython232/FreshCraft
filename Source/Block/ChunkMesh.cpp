@@ -111,6 +111,9 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 									if ((block.flags & Block::LIQUID) && vertex.pos.y == 1.f + blockPos.y) {
 										vertex.pos.y -= 0.0625f;
 									}
+									//Fix transparent blocks on holed blocks
+									if (blocks[sideBlock - 1].flags & Block::HOLES)
+										vertex.pos -= blockNormals[s] * 0.001f;
 									vertex.color = { 1.f, 1.f, 1.f };
 									vertex.normal = blockNormals[s];
 									vertex.uv = blockUvs[j] + block.textureOffsets[s];
@@ -201,7 +204,7 @@ void ChunkMesh::Resort(const UpdateEvent& event) {
 		const Vertex* vertices = reinterpret_cast<const Vertex*>(meshData[mostRecentMesh]->GetMappedMemory());
 		uint32_t* indices = reinterpret_cast<uint32_t*>((char*)meshData[mostRecentMesh]->GetMappedMemory() + (transparentIndexOffset - transparentVertexOffset));
 
-		//List of triangle index references
+		//List of triangle indices
 		std::vector<Triangle> tris;
 		for (uint32_t i = 0; i < indexCount; i += 6) {
 			tris.push_back({ { indices[i], indices[i + 1], indices[i + 2], indices[i + 3], indices[i + 4], indices[i + 5]}});
@@ -226,4 +229,6 @@ void ChunkMesh::Resort(const UpdateEvent& event) {
 		meshData[mostRecentMesh]->WriteToBuffer((void*)tris.data(), indexCount * sizeof(uint32_t), transparentIndexOffset - transparentVertexOffset);
 		meshData[mostRecentMesh]->UnMap();
 	}
+
+	shouldResort = false;
 }

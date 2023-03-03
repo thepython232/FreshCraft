@@ -23,6 +23,7 @@ public:
 
 	bool ShouldUpdate() const { return shouldUpdate; }
 	bool Loaded() const { return loaded; }
+	bool ShouldResort() const { return shouldResort; }
 
 	//Resort transparent geometry
 	void Resort(const UpdateEvent& event);
@@ -38,6 +39,7 @@ private:
 	uint32_t mostRecentMesh;
 	glm::ivec2 pos;
 	bool shouldUpdate = true;
+	bool shouldResort = true;
 	bool loaded = false;
 	Device& device;
 	class ChunkManager& manager;

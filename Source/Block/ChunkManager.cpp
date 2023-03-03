@@ -38,32 +38,54 @@ void ChunkManager::Update(const UpdateEvent& event) {
 		}
 
 		mesh.Update(event);
-		mesh.Resort(event);
+		//Sort nearby chunks if neccessary
 	}
 
 	//Sort neccessary chunks
 	glm::ivec2 chunkID;
-	BlockToChunk(glm::ivec3(event.mainCamera.GetPos().x - CHUNK_SIZE / 2, 0, event.mainCamera.GetPos().z - CHUNK_SIZE / 2), chunkID);
+	BlockToChunk(glm::ivec3(event.mainCamera.GetPos().x + CHUNK_SIZE / 2, 0, event.mainCamera.GetPos().z + CHUNK_SIZE / 2), chunkID);
 
 	//Player crossed a chunk border
 	if (chunkID != oldPlayerChunk) {
 		if (chunks.contains(oldPlayerChunk) && chunks[oldPlayerChunk]->Loaded())
-			chunks[oldPlayerChunk]->Resort(event);
+			chunks[oldPlayerChunk]->shouldResort = true;
 		if (chunks.contains(glm::ivec2(chunkID.x, oldPlayerChunk.y)) && chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->Loaded())
-			chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->Resort(event);
+			chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->shouldResort = true;
 		if (chunks.contains(glm::ivec2(oldPlayerChunk.x, chunkID.y)) && chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->Loaded())
-			chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->Resort(event);
+			chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->shouldResort = true;
 		if (chunks.contains(chunkID) && chunks[chunkID]->Loaded())
-			chunks[chunkID]->Resort(event);
+			chunks[chunkID]->shouldResort = true;
 	}
-	//Player moved
-	else if (event.mainCamera.GetPos() != oldPlayerPos) {
-		if (chunks.contains(chunkID) && chunks[chunkID]->Loaded())
-			chunks[chunkID]->Resort(event);
+	//Player moved (also updates nearby chunks) TODO
+	else if (glm::ivec3(event.mainCamera.GetPos()) != oldPlayerPos) {
+		for (int x = -1; x <= 1; x++) {
+			for (int z = -1; z <= 1; z++) {
+				glm::ivec2 chunk{ x + chunkID.x, z + chunkID.y };
+				if (chunks.contains(chunk) && chunks[chunk]->Loaded())
+					chunks[chunk]->shouldResort = true;
+			}
+		}
 	}
 
 	oldPlayerChunk = chunkID;
-	oldPlayerPos = event.mainCamera.GetPos();
+	oldPlayerPos = glm::ivec3(event.mainCamera.GetPos());
+
+	std::vector<glm::ivec2> chunksToSort;
+	for (const auto& kv : chunks) {
+		if (kv.second->Loaded() && kv.second->ShouldResort()) {
+			chunksToSort.push_back(kv.first);
+		}
+	}
+
+	//Sort by distance from the camera
+	std::sort(chunksToSort.begin(), chunksToSort.end(), [&event](const glm::ivec2& a, const glm::ivec2& b) {
+		return glm::length(glm::vec2(a) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE)
+			< glm::length(glm::vec2(b) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE);
+		});
+
+	for (int i = 0; i < std::min(MAX_SORTED_CHUNKS, static_cast<int>(chunksToSort.size())); i++) {
+		chunks[chunksToSort[i]]->Resort(event);
+	}
 }
 
 //TODO: broken
@@ -125,21 +147,26 @@ void ChunkManager::BreakBlock(const glm::ivec3& pos, const UpdateEvent& event) {
 	world[chunkID][blockPos.y * CHUNK_SIZE * CHUNK_SIZE + blockPos.z * CHUNK_SIZE + blockPos.x] = 0;
 	if (blockPos.x == 0) {
 		chunks[chunkID + glm::ivec2(-1, 0)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(-1, 0)]->shouldResort = true;
 		chunks[chunkID + glm::ivec2(-1, 0)]->Update(event);
 	}
 	else if (blockPos.x == CHUNK_SIZE - 1) {
 		chunks[chunkID + glm::ivec2(1, 0)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(1, 0)]->shouldResort = true;
 		chunks[chunkID + glm::ivec2(1, 0)]->Update(event);
 	}
 	if (blockPos.z == 0) {
 		chunks[chunkID + glm::ivec2(0, -1)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(0, -1)]->shouldResort = true;
 		chunks[chunkID + glm::ivec2(0, -1)]->Update(event);
 	}
 	else if (blockPos.z == CHUNK_SIZE - 1) {
 		chunks[chunkID + glm::ivec2(0, 1)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(0, 1)]->shouldResort = true;
 		chunks[chunkID + glm::ivec2(0, 1)]->Update(event);
 	}
 	chunks[chunkID]->shouldUpdate = true;
+	chunks[chunkID]->shouldResort = true;
 }
 
 void ChunkManager::PlaceBlock(const glm::ivec3& pos, BlockID block, const UpdateEvent& event) {
@@ -149,17 +176,22 @@ void ChunkManager::PlaceBlock(const glm::ivec3& pos, BlockID block, const Update
 	world[chunkID][blockPos.y * CHUNK_SIZE * CHUNK_SIZE + blockPos.z * CHUNK_SIZE + blockPos.x] = block;
 	if (blockPos.x == 0) {
 		chunks[chunkID + glm::ivec2(-1, 0)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(-1, 0)]->shouldResort = true;
 	}
 	else if (blockPos.x == CHUNK_SIZE - 1) {
 		chunks[chunkID + glm::ivec2(1, 0)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(1, 0)]->shouldResort = true;
 	}
 	if (blockPos.z == 0) {
 		chunks[chunkID + glm::ivec2(0, -1)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(0, -1)]->shouldResort = true;
 	}
 	else if (blockPos.z == CHUNK_SIZE - 1) {
 		chunks[chunkID + glm::ivec2(0, 1)]->shouldUpdate = true;
+		chunks[chunkID + glm::ivec2(0, 1)]->shouldResort = true;
 	}
 	chunks[chunkID]->shouldUpdate = true;
+	chunks[chunkID]->shouldResort = true;
 }
 
 void ChunkManager::GenerateChunk(const glm::ivec2& chunkID) {
