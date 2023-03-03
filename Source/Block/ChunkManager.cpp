@@ -38,13 +38,32 @@ void ChunkManager::Update(const UpdateEvent& event) {
 		}
 
 		mesh.Update(event);
+		mesh.Resort(event);
 	}
 
+	//Sort neccessary chunks
 	glm::ivec2 chunkID;
-	BlockToChunk(glm::ivec3(event.mainCamera.GetPos() - 8.f), chunkID);
+	BlockToChunk(glm::ivec3(event.mainCamera.GetPos().x - CHUNK_SIZE / 2, 0, event.mainCamera.GetPos().z - CHUNK_SIZE / 2), chunkID);
 
-	if (chunks.contains(glm::ivec2(0, 0)) && chunks[glm::ivec2(0, 0)]->Loaded())
-		chunks[glm::ivec2(0, 0)]->Resort(event);
+	//Player crossed a chunk border
+	if (chunkID != oldPlayerChunk) {
+		if (chunks.contains(oldPlayerChunk) && chunks[oldPlayerChunk]->Loaded())
+			chunks[oldPlayerChunk]->Resort(event);
+		if (chunks.contains(glm::ivec2(chunkID.x, oldPlayerChunk.y)) && chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->Loaded())
+			chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->Resort(event);
+		if (chunks.contains(glm::ivec2(oldPlayerChunk.x, chunkID.y)) && chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->Loaded())
+			chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->Resort(event);
+		if (chunks.contains(chunkID) && chunks[chunkID]->Loaded())
+			chunks[chunkID]->Resort(event);
+	}
+	//Player moved
+	else if (event.mainCamera.GetPos() != oldPlayerPos) {
+		if (chunks.contains(chunkID) && chunks[chunkID]->Loaded())
+			chunks[chunkID]->Resort(event);
+	}
+
+	oldPlayerChunk = chunkID;
+	oldPlayerPos = event.mainCamera.GetPos();
 }
 
 //TODO: broken
@@ -68,7 +87,8 @@ bool ChunkManager::VoxelRaytrace(glm::vec3 pos, const glm::vec3& dir, float tMax
 				glm::ivec2 chunkID;
 				glm::ivec3 chunkBlockPos = BlockToChunk(blockPos, chunkID);
 
-				if (world.contains(chunkID) && world.find(chunkID)->second[chunkBlockPos.y * CHUNK_SIZE * CHUNK_SIZE + chunkBlockPos.z * CHUNK_SIZE + chunkBlockPos.x] > 0) {
+				if (world.contains(chunkID) && world.find(chunkID)->second[chunkBlockPos.y * CHUNK_SIZE * CHUNK_SIZE + chunkBlockPos.z * CHUNK_SIZE + chunkBlockPos.x] > 0
+					&& !(blocks[world.find(chunkID)->second[chunkBlockPos.y * CHUNK_SIZE * CHUNK_SIZE + chunkBlockPos.z * CHUNK_SIZE + chunkBlockPos.x] - 1].flags & Block::LIQUID)) {
 					glm::vec3 minBounds = glm::vec3{ blockPos };
 					glm::vec3 maxBounds = glm::vec3{ blockPos } + glm::vec3{ 1.f };
 

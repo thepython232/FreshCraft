@@ -86,10 +86,9 @@ void CameraController::Update(const UpdateEvent& event) {
 		breakCooldown += event.deltaTime;
 	}
 
+	//std::cout << event.input.GetScrollDelta().y << std::endl;
 	selectedBlock += int(event.input.GetScrollDelta().y);
 	selectedBlock %= blocks.size();
-
-	std::cout << selectedBlock << std::endl;
 
 	//if (event.input.GetScrollDelta().y > 0)
 	//	std::cout << blocks[selectedBlock].name << std::endl;

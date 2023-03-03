@@ -7,6 +7,8 @@ InputSystem::InputSystem(glm::vec2 mousePos) : mousePos(mousePos) {
 	oldKeys.reset();
 	buttons.reset();
 	oldButtons.reset();
+	oldScroll = glm::vec2(0.f);
+	scroll = glm::vec2(0.f);
 }
 
 InputSystem::~InputSystem() {

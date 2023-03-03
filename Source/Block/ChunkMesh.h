@@ -15,6 +15,8 @@ public:
 	ChunkMesh(Device& device, glm::ivec2 pos, class ChunkManager& manager);
 	~ChunkMesh();
 
+	const glm::ivec2& GetPos() const { return pos; }
+
 	void Draw(const RenderEvent& event);
 	void DrawTransparent(const RenderEvent& event);
 	void Update(const UpdateEvent& event);
@@ -26,7 +28,7 @@ public:
 	void Resort(const UpdateEvent& event);
 
 	struct Triangle {
-		uint32_t indices[3];
+		uint32_t indices[6];
 	};
 
 private:

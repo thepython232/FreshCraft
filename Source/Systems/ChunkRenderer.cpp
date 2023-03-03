@@ -85,10 +85,23 @@ void ChunkRenderer::GlobalRender(RenderEvent& event) {
 		vkCmdBindDescriptorSets(event.commandBuffer, pipeline->GetBindPoint(), pipeline->GetLayout(), 1, 1, &sets[event.frameIndex], 0, nullptr);
 	}
 
+	//Sort according to the distance from the camera
+	std::vector<std::pair<glm::ivec2, ChunkMesh*>> meshes;
 	for (const auto& kv : manager.chunks) {
+		meshes.push_back(std::make_pair(kv.first, kv.second.get()));
+	}
+
+	std::sort(meshes.begin(), meshes.end(), [&event](const std::pair<glm::ivec2, ChunkMesh*>& a, const std::pair<glm::ivec2, ChunkMesh*>& b) {
+		return glm::length(glm::vec2(a.first.x * CHUNK_SIZE - event.mainCamera.GetPos().x,
+			a.first.y * CHUNK_SIZE - event.mainCamera.GetPos().z))
+			> glm::length(glm::vec2(b.first.x * CHUNK_SIZE - event.mainCamera.GetPos().x,
+				b.first.y * CHUNK_SIZE  - event.mainCamera.GetPos().z));
+		});
+
+	for (const auto& kv : meshes) {
 		glm::ivec2 chunkPos = kv.first;
 		chunkPos -= glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
-		if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE && kv.first == glm::ivec2(0)) {
+		if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
 			ChunkPushConstants push{};
 			push.pos = kv.first;
 			vkCmdPushConstants(event.commandBuffer, pipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);
@@ -105,10 +118,10 @@ void ChunkRenderer::GlobalRender(RenderEvent& event) {
 		vkCmdBindDescriptorSets(event.commandBuffer, transparentPipeline->GetBindPoint(), transparentPipeline->GetLayout(), 0, 1, &event.globalSet, 0, nullptr);
 		vkCmdBindDescriptorSets(event.commandBuffer, transparentPipeline->GetBindPoint(), transparentPipeline->GetLayout(), 1, 1, &sets[event.frameIndex], 0, nullptr);
 
-		for (const auto& kv : manager.chunks) {
+		for (const auto& kv : meshes) {
 			glm::ivec2 chunkPos = kv.first;
 			chunkPos -= glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
-			if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE && kv.first == glm::ivec2(0)) {
+			if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
 				ChunkPushConstants push{};
 				push.pos = kv.first;
 				vkCmdPushConstants(event.commandBuffer, transparentPipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);

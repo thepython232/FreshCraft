@@ -18,9 +18,8 @@ layout(set = 0, binding = 0) uniform GlobalUBO {
 } ubo;
 
 void main() {
-	//outColor = vec4(color, 1.0);
 	outColor = texture(textureAtlas, uv);
-	outColor.xyz *= max(dot(normal, normalize(vec3(0.3, 0.6, -1.0))), 0.2);
+	outColor.xyz *= max(dot(normal, normalize(vec3(0.1, 1.0, -0.4))), 0.2);
 
 	float dist = (length(pos - ubo.invView[3].xyz) - ubo.fogNear) / ubo.fogDist;
 	dist = clamp(dist, 0.0, 1.0);
