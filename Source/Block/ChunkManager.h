@@ -7,7 +7,7 @@
 #include "Noise\Noise.h"
 
 constexpr int RENDER_DISTANCE = 12;
-constexpr int MAX_SORTED_CHUNKS = 2;
+constexpr int MAX_SORTED_CHUNKS = 4;
 
 struct BlockHitInfo {
 	glm::ivec2 chunkID;
@@ -46,7 +46,7 @@ private:
 	//they could be destroyed to conserve memory
 	//Ordered by distance from the camera
 	std::unordered_map<glm::ivec2, std::unique_ptr<ChunkMesh>> chunks;
-	std::vector<glm::ivec2> chunksToUpdate;
+	std::vector<glm::ivec2> sortedChunks;
 	glm::ivec2 oldPlayerChunk;
 	glm::ivec3 oldPlayerPos;
 	Device& device;

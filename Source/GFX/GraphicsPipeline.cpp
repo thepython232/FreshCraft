@@ -15,8 +15,8 @@ GraphicsPipeline::GraphicsPipeline(Device& device, const LayoutSettings& layout,
 	createInfo.pColorBlendState = &settings.colorBlending.settings;
 	createInfo.pDepthStencilState = OPT_VAL_OR_NULLPTR(settings.depthStencil);
 	if (settings.dynamicState.settings.has_value()) {
-		settings.dynamicState.settings.value().dynamicStateCount = static_cast<uint32_t>(settings.dynamicState.dynamicStates.size());
-		settings.dynamicState.settings.value().pDynamicStates = settings.dynamicState.dynamicStates.data();
+		settings.dynamicState.settings->dynamicStateCount = static_cast<uint32_t>(settings.dynamicState.dynamicStates.size());
+		settings.dynamicState.settings->pDynamicStates = settings.dynamicState.dynamicStates.data();
 	}
 	createInfo.pDynamicState = OPT_VAL_OR_NULLPTR(settings.dynamicState.settings);
 	createInfo.pInputAssemblyState = &settings.inputAssembly;
@@ -86,18 +86,17 @@ void GraphicsPipeline::DefaultSettings(Settings& settings) {
 	
 	settings.multisample = std::nullopt;
 
-	VkPipelineDepthStencilStateCreateInfo depthInfo{};
-	depthInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-	depthInfo.minDepthBounds = 0.f;
-	depthInfo.maxDepthBounds = 1.f;
-	depthInfo.front = {};
-	depthInfo.back = {};
-	depthInfo.depthBoundsTestEnable = VK_FALSE;
-	depthInfo.depthCompareOp = VK_COMPARE_OP_LESS;
-	depthInfo.depthTestEnable = VK_TRUE;
-	depthInfo.depthWriteEnable = VK_TRUE;
-	depthInfo.stencilTestEnable = VK_FALSE;
-	settings.depthStencil = depthInfo;
+	settings.depthStencil = VkPipelineDepthStencilStateCreateInfo{};
+	settings.depthStencil->sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
+	settings.depthStencil->minDepthBounds = 0.f;
+	settings.depthStencil->maxDepthBounds = 1.f;
+	settings.depthStencil->front = {};
+	settings.depthStencil->back = {};
+	settings.depthStencil->depthBoundsTestEnable = VK_FALSE;
+	settings.depthStencil->depthCompareOp = VK_COMPARE_OP_LESS;
+	settings.depthStencil->depthTestEnable = VK_TRUE;
+	settings.depthStencil->depthWriteEnable = VK_TRUE;
+	settings.depthStencil->stencilTestEnable = VK_FALSE;
 
 	settings.colorBlending.settings = {};
 	settings.colorBlending.settings.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -110,19 +109,18 @@ void GraphicsPipeline::DefaultSettings(Settings& settings) {
 	settings.colorBlending.colorAttachments.push_back(
 		VkPipelineColorBlendAttachmentState{
 			VK_FALSE,
-			VK_BLEND_FACTOR_ZERO,
-			VK_BLEND_FACTOR_ZERO,
+			VK_BLEND_FACTOR_SRC_ALPHA,
+			VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA,
 			VK_BLEND_OP_ADD,
-			VK_BLEND_FACTOR_ZERO,
-			VK_BLEND_FACTOR_ZERO,
+			VK_BLEND_FACTOR_ONE,
+			VK_BLEND_FACTOR_ONE,
 			VK_BLEND_OP_ADD,
 			VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT
 		}
 	);
 
-	VkPipelineDynamicStateCreateInfo dynamicState{};
-	dynamicState.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	//Dynamic States set in GraphicsPipeline's ctor
-	settings.dynamicState.settings = dynamicState;
+	settings.dynamicState.settings = VkPipelineDynamicStateCreateInfo{};
+	settings.dynamicState.settings->sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
 	settings.dynamicState.dynamicStates = { VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR };
 }

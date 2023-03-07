@@ -1,11 +1,12 @@
 #include "ChunkRenderer.h"
+#include "GFX/CameraController.h"
 
 struct ChunkPushConstants {
 	glm::ivec2 pos;
 };
 
-ChunkRenderer::ChunkRenderer(Device& device, Renderer& renderer, PipelineCache& cache, VkDescriptorSetLayout globalSetLayout, ChunkManager& chunks)
-	: RenderSystem(renderer, this), manager(chunks) {
+ChunkRenderer::ChunkRenderer(Device& device, Renderer& renderer, PipelineCache& cache, VkDescriptorSetLayout globalSetLayout, CameraController& camera, ChunkManager& chunks)
+	: RenderSystem(renderer), manager(chunks), camera(camera) {
 	RegisterRenderHandler("Global", 0, 10.f, &ChunkRenderer::GlobalRender);
 
 	pool = DescriptorPool::Builder(device)
@@ -44,6 +45,7 @@ ChunkRenderer::ChunkRenderer(Device& device, Renderer& renderer, PipelineCache& 
 
 	pipelineSettings.shaders.pop_back();
 	pipelineSettings.shaders.push_back(Pipeline::Shader{ device, "Shaders\\transparent.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT });
+	//
 	pipelineSettings.depthStencil->depthWriteEnable = VK_FALSE;
 
 	transparentPipeline = std::make_unique<GraphicsPipeline>(device, layoutSettings, pipelineSettings, cache);
@@ -59,6 +61,22 @@ ChunkRenderer::ChunkRenderer(Device& device, Renderer& renderer, PipelineCache& 
 	layoutSettings.layouts.pop_back();
 
 	wireframePipeline = std::make_unique<GraphicsPipeline>(device, layoutSettings, pipelineSettings, cache);
+
+	pipelineSettings.inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+	pipelineSettings.depthStencil->depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
+	pipelineSettings.vertexInput.bindingDescriptions.clear();
+	pipelineSettings.vertexInput.attributeDescriptions.clear();
+	pipelineSettings.rasterization.lineWidth = std::min(1.5f, device.Limits().lineWidthRange[1]);
+
+	pipelineSettings.shaders.clear();
+	pipelineSettings.shaders.push_back(Pipeline::Shader{ device, "Shaders\\hover.vert.spv", VK_SHADER_STAGE_VERTEX_BIT });
+	pipelineSettings.shaders.push_back(Pipeline::Shader{ device, "Shaders\\hover.frag.spv", VK_SHADER_STAGE_FRAGMENT_BIT });
+
+	layoutSettings.pushConstants.clear();
+	range.size = sizeof(glm::ivec3);
+	layoutSettings.pushConstants.push_back(range);
+	
+	hoverPipeline = std::make_unique<GraphicsPipeline>(device, layoutSettings, pipelineSettings, cache);
 
 	Texture::SamplerSettings samplerSettings{};
 	samplerSettings.enableAnisotropy = VK_FALSE;
@@ -85,30 +103,18 @@ void ChunkRenderer::GlobalRender(RenderEvent& event) {
 		vkCmdBindDescriptorSets(event.commandBuffer, pipeline->GetBindPoint(), pipeline->GetLayout(), 1, 1, &sets[event.frameIndex], 0, nullptr);
 	}
 
-	//Sort according to the distance from the camera
-	std::vector<std::pair<glm::ivec2, ChunkMesh*>> meshes;
-	for (const auto& kv : manager.chunks) {
-		meshes.push_back(std::make_pair(kv.first, kv.second.get()));
-	}
-
-	std::sort(meshes.begin(), meshes.end(), [&event](const std::pair<glm::ivec2, ChunkMesh*>& a, const std::pair<glm::ivec2, ChunkMesh*>& b) {
-		return glm::length(glm::vec2(a.first.x * CHUNK_SIZE - event.mainCamera.GetPos().x,
-			a.first.y * CHUNK_SIZE - event.mainCamera.GetPos().z))
-			> glm::length(glm::vec2(b.first.x * CHUNK_SIZE - event.mainCamera.GetPos().x,
-				b.first.y * CHUNK_SIZE  - event.mainCamera.GetPos().z));
-		});
-
-	for (const auto& kv : meshes) {
-		glm::ivec2 chunkPos = kv.first;
+	for (const auto& chunkID : manager.sortedChunks) {
+		glm::ivec2 chunkPos = chunkID;
 		chunkPos -= glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
-		if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
+		ChunkMesh& chunk = *manager.chunks[chunkID];
+		if (chunk.Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
 			ChunkPushConstants push{};
-			push.pos = kv.first;
+			push.pos = chunkID;
 			vkCmdPushConstants(event.commandBuffer, pipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);
-			kv.second->Draw(event);
+			chunk.Draw(event);
 			//For wireframe view, just render transparent meshes normally
 			if (wireframe) {
-				kv.second->DrawTransparent(event);
+				chunk.DrawTransparent(event);
 			}
 		}
 	}
@@ -118,16 +124,26 @@ void ChunkRenderer::GlobalRender(RenderEvent& event) {
 		vkCmdBindDescriptorSets(event.commandBuffer, transparentPipeline->GetBindPoint(), transparentPipeline->GetLayout(), 0, 1, &event.globalSet, 0, nullptr);
 		vkCmdBindDescriptorSets(event.commandBuffer, transparentPipeline->GetBindPoint(), transparentPipeline->GetLayout(), 1, 1, &sets[event.frameIndex], 0, nullptr);
 
-		for (const auto& kv : meshes) {
-			glm::ivec2 chunkPos = kv.first;
+		for (const auto& chunkID : manager.sortedChunks) {
+			glm::ivec2 chunkPos = chunkID;
 			chunkPos -= glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
-			if (kv.second->Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
+			ChunkMesh& mesh = *manager.chunks[chunkID];
+			if (mesh.Loaded() && glm::length(glm::vec2(chunkPos)) < RENDER_DISTANCE) {
 				ChunkPushConstants push{};
-				push.pos = kv.first;
+				push.pos = chunkID;
 				vkCmdPushConstants(event.commandBuffer, transparentPipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(push), &push);
-				kv.second->DrawTransparent(event);
+				mesh.DrawTransparent(event);
 			}
 		}
+	}
+
+	//Draw the block outline
+	glm::ivec3 blockPos;
+	if (camera.GetSelectedBlockPos(blockPos)) {
+		hoverPipeline->Bind(event.commandBuffer);
+		vkCmdBindDescriptorSets(event.commandBuffer, hoverPipeline->GetBindPoint(), hoverPipeline->GetLayout(), 0, 1, &event.globalSet, 0, nullptr);
+		vkCmdPushConstants(event.commandBuffer, hoverPipeline->GetLayout(), VK_SHADER_STAGE_ALL, 0, sizeof(blockPos), &blockPos);
+		vkCmdDraw(event.commandBuffer, 8 * 6, 1, 0, 0);
 	}
 }
 

@@ -19,7 +19,7 @@ const std::vector<uint32_t> indices = {
 };
 
 SimpleRenderSystem::SimpleRenderSystem(Device& device, Renderer& renderer, PipelineCache& cache, VkDescriptorSetLayout globalSetLayout)
-	: RenderSystem(renderer, this) {
+	: RenderSystem(renderer) {
 	RegisterRenderHandler("Global", 0, 10.f, &SimpleRenderSystem::RenderGlobal);
 
 	setPool = DescriptorPool::Builder(device)

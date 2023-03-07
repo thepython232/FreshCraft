@@ -112,7 +112,7 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 										vertex.pos.y -= 0.0625f;
 									}
 									//Fix transparent blocks on holed blocks
-									if (blocks[sideBlock - 1].flags & Block::HOLES)
+									if (sideBlock > 0 && (blocks[sideBlock - 1].flags & Block::HOLES))
 										vertex.pos -= blockNormals[s] * 0.001f;
 									vertex.color = { 1.f, 1.f, 1.f };
 									vertex.normal = blockNormals[s];
@@ -143,9 +143,14 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 	}
 
 	//TODO: use a custom allocator for the buffers
+	if (mostRecentMesh == event.frameIndex)
+		mostRecentMesh = (event.frameIndex + 1) % Swapchain::MAX_FRAMES_IN_FLIGHT;
+	else
+		mostRecentMesh = event.frameIndex;
+
 	VkDeviceSize bufferSize = sizeof(Vertex) * (vertices.size() + transparentVertices.size()) + sizeof(uint32_t) * (indices.size() + transparentIndices.size());
 
-	meshData[event.frameIndex] = std::make_unique<Buffer>(
+	meshData[mostRecentMesh] = std::make_unique<Buffer>(
 		device,
 		bufferSize,
 		1,
@@ -158,14 +163,14 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 	transparentVertexOffset = indexOffset + indices.size() * sizeof(uint32_t);
 	transparentIndexOffset = transparentVertexOffset + transparentVertices.size() * sizeof(Vertex);
 
-	meshData[event.frameIndex]->Map();
-	meshData[event.frameIndex]->WriteToBuffer((void*)vertices.data(), vertices.size() * sizeof(Vertex), 0);
-	meshData[event.frameIndex]->WriteToBuffer((void*)indices.data(), indices.size() * sizeof(uint32_t), indexOffset);
-	meshData[event.frameIndex]->WriteToBuffer((void*)transparentVertices.data(), transparentVertices.size() * sizeof(Vertex), transparentVertexOffset);
-	meshData[event.frameIndex]->WriteToBuffer((void*)transparentIndices.data(), transparentIndices.size() * sizeof(uint32_t), transparentIndexOffset);
-	meshData[event.frameIndex]->UnMap();
-	
-	mostRecentMesh = event.frameIndex;
+	meshData[mostRecentMesh]->Map();
+	meshData[mostRecentMesh]->WriteToBuffer((void*)vertices.data(), vertices.size() * sizeof(Vertex), 0);
+	meshData[mostRecentMesh]->WriteToBuffer((void*)indices.data(), indices.size() * sizeof(uint32_t), indexOffset);
+	meshData[mostRecentMesh]->WriteToBuffer((void*)transparentVertices.data(), transparentVertices.size() * sizeof(Vertex), transparentVertexOffset);
+	meshData[mostRecentMesh]->WriteToBuffer((void*)transparentIndices.data(), transparentIndices.size() * sizeof(uint32_t), transparentIndexOffset);
+	meshData[mostRecentMesh]->Flush();
+	meshData[mostRecentMesh]->UnMap();
+
 	shouldUpdate = false;
 	loaded = true;
 }
@@ -197,10 +202,11 @@ glm::vec3 Centroid(glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d) {
 }
 
 void ChunkMesh::Resort(const UpdateEvent& event) {
-	if (transparentVertexOffset != meshData[mostRecentMesh]->GetBufferSize()) {
+	if (transparentVertexOffset != meshData[mostRecentMesh]->GetBufferSize() && Loaded()) {
 		uint32_t indexCount = (meshData[mostRecentMesh]->GetBufferSize() - transparentIndexOffset) / sizeof(uint32_t);
 		//Dump data out of buffer
 		meshData[mostRecentMesh]->Map(meshData[mostRecentMesh]->GetBufferSize() - transparentVertexOffset, transparentVertexOffset);
+		meshData[mostRecentMesh]->Invalidate(meshData[mostRecentMesh]->GetBufferSize() - transparentVertexOffset, transparentVertexOffset);
 		const Vertex* vertices = reinterpret_cast<const Vertex*>(meshData[mostRecentMesh]->GetMappedMemory());
 		uint32_t* indices = reinterpret_cast<uint32_t*>((char*)meshData[mostRecentMesh]->GetMappedMemory() + (transparentIndexOffset - transparentVertexOffset));
 
@@ -227,6 +233,7 @@ void ChunkMesh::Resort(const UpdateEvent& event) {
 
 		//Write the data back
 		meshData[mostRecentMesh]->WriteToBuffer((void*)tris.data(), indexCount * sizeof(uint32_t), transparentIndexOffset - transparentVertexOffset);
+		meshData[mostRecentMesh]->Flush(meshData[mostRecentMesh]->GetBufferSize() - transparentIndexOffset, transparentIndexOffset);
 		meshData[mostRecentMesh]->UnMap();
 	}
 

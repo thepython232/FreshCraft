@@ -38,14 +38,24 @@ bool Device::IsDeviceSuitable(VkPhysicalDevice device) const {
 	vkGetPhysicalDeviceFeatures(device, &features);
 	vkGetPhysicalDeviceProperties(device, &props);
 
-	bool featuresSupported = features.samplerAnisotropy;
+	bool featuresSupported = features.samplerAnisotropy && features.fillModeNonSolid && features.wideLines;
 
 	QueueFamilyIndices indices = GetQueueFamilyIndices(device);
 	SwapchainSupport swapchainSupport = QuerySwapchainSupport(device);
 
 	bool swapchainAdequate = !swapchainSupport.formats.empty();
 
-	return indices.IsComplete() && featuresSupported && swapchainAdequate;
+	VkPhysicalDeviceDescriptorIndexingFeaturesEXT indexingFeatures{};
+	indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+	
+	VkPhysicalDeviceFeatures2 extendedFeatures{};
+	extendedFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+	extendedFeatures.pNext = &indexingFeatures;
+	vkGetPhysicalDeviceFeatures2(device, &extendedFeatures);
+
+	bool extendedFeaturesSupported = indexingFeatures.descriptorBindingPartiallyBound && indexingFeatures.runtimeDescriptorArray;
+
+	return indices.IsComplete() && featuresSupported && swapchainAdequate && extendedFeaturesSupported;
 }
 
 bool Device::CheckExtensionSupport() const {
@@ -71,12 +81,19 @@ bool Device::CheckExtensionSupport() const {
 }
 
 void Device::CreateDevice() {
+	VkPhysicalDeviceDescriptorIndexingFeaturesEXT indexingFeatures{};
+	indexingFeatures.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_DESCRIPTOR_INDEXING_FEATURES_EXT;
+	indexingFeatures.descriptorBindingPartiallyBound = VK_TRUE;
+	indexingFeatures.runtimeDescriptorArray = VK_TRUE;
+
 	VkPhysicalDeviceFeatures features{};
 	features.samplerAnisotropy = VK_TRUE;
 	features.fillModeNonSolid = VK_TRUE;
+	features.wideLines = VK_TRUE;
 
 	VkDeviceCreateInfo createInfo{};
 	createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+	createInfo.pNext = &indexingFeatures;
 	QueueFamilyIndices indices = GetQueueFamilyIndices(physicalDevice);
 	std::set<uint32_t> queueFamilies{ indices.graphicsFamily.value(), indices.presentFamily.value() };
 	float queuePriority = 1.f;

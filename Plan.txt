@@ -1,9 +1,5 @@
 THE BIG TODOS:
- - UI System - crosshair, block selector, and block outline
-
- FRESH - MAKE A STUPID UI SYSTEM.
- SELECTING BLOCKS SUCKS!
-
+ - Better UI System - OOP
  - Skybox renderer - sun and stars (with fake sunset)
  - Player Physics
  - More blocks
@@ -23,6 +19,8 @@ THE BIG TODOS:
  - Particle System
  - Entity System?
  - Code for things like doors and chests that update every frame
+ - Procedurally render orthographics views of all blocks for use in the hotbar
+ - Seperate Level class that can handle storing chunks on disk
 
  And finally,
  MORE GAMEPLAY!

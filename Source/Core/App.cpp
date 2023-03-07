@@ -1,6 +1,7 @@
 #include "App.h"
 #include "Events.h"
 #include "Systems\ChunkRenderer.h"
+#include "Systems\UIRenderer.h"
 
 constexpr int TPS = 100;
 
@@ -37,7 +38,8 @@ App::App() {
 			.Build(sets[i]);
 	}
 
-	systems.push_back(std::make_unique<ChunkRenderer>(device, renderer, cache, layout->GetLayout(), chunkManager));
+	systems.push_back(std::make_unique<ChunkRenderer>(device, renderer, cache, layout->GetLayout(), cameraController, chunkManager));
+	systems.push_back(std::make_unique<UIRenderer>(device, renderer, cache, cameraController));
 
 	lastTick = lastFrameUpdate = startTime = std::chrono::high_resolution_clock::now();
 
@@ -49,8 +51,6 @@ App::~App() {
 }
 
 void App::Run() {
-	startTime = std::chrono::high_resolution_clock::now();
-
 	while (!window.ShouldClose()) {
 		glfwPollEvents();
 		ReDraw();

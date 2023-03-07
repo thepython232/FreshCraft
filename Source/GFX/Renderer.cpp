@@ -33,20 +33,17 @@ Renderer::Pass::Builder& Renderer::Pass::Builder::AddAttachment(
 	VkFormat format,
 	VkImageUsageFlags additionalUsage,
 	std::initializer_list<std::pair<int, AttachmentInfo::Type>> subpasses,
-	bool clearAtStart,
-	bool store,
-	bool sampled,
+	uint32_t flags,
 	VkClearValue clearValue
 ) {
 	AttachmentInfo info{};
-	info.clearAtStart = clearAtStart;
-	info.store = store;
+	info.flags = flags;
 	info.clearValue = clearValue;
 	info.subpasses = subpasses;
 	info.name = name;
 
 	VkImageAspectFlags aspect = 0;
-	VkImageUsageFlags usage = additionalUsage | (sampled ? VK_IMAGE_USAGE_SAMPLED_BIT : 0);
+	VkImageUsageFlags usage = additionalUsage | ((info.flags & AttachmentInfo::Sampled) ? VK_IMAGE_USAGE_SAMPLED_BIT : 0);
 	if (IsDepthFormat(format)) {
 		aspect |= VK_IMAGE_ASPECT_DEPTH_BIT;
 		usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
@@ -85,16 +82,17 @@ Renderer::Pass::Builder& Renderer::Pass::Builder::AddAttachment(
 Renderer::Pass::Builder& Renderer::Pass::Builder::AddSwapAttachment(
 	std::string name,
 	std::initializer_list<std::pair<int, AttachmentInfo::Type>> subpasses,
+	uint32_t flags,
 	VkClearColorValue clear
 ) {
 	AttachmentInfo info{};
-	info.clearAtStart = true;
+	info.flags = flags;
+	info.flags |= AttachmentInfo::Store;
 	VkClearValue value{};
 	value.color = clear;
 	info.clearValue = value;
 	info.subpasses = subpasses;
 	info.isSwap = true;
-	info.store = true;
 	info.name = name;
 
 	attachments.push_back(std::move(info));
@@ -106,13 +104,11 @@ Renderer::Pass::Builder& Renderer::Pass::Builder::AddPassAttachment(
 	std::string name,
 	Pass& pass,
 	std::initializer_list<std::pair<int, AttachmentInfo::Type>> subpasses,
-	bool clear,
-	bool store,
+	uint32_t flags,
 	VkClearValue clearValue
 ) {
 	AttachmentInfo info{};
-	info.clearAtStart = clear;
-	info.store = store;
+	info.flags = flags;
 	info.clearValue = clearValue;
 	info.subpasses = subpasses;
 	info.refTextures = &pass.attachments[name].textures;
@@ -146,9 +142,9 @@ Renderer::Pass::Pass(
 
 	//Loop over every attachment that was passed to this pass
 	for (int i = 0; i < attachments.size(); i++) {
-		auto& info = attachments[i];
+		AttachmentInfo& info = attachments[i];    //<- DO NOT MAKE THIS const! Textures are moved!!
 		Attachment attachment{};
-		attachment.clearAtStart = info.clearAtStart;
+		attachment.flags = info.flags;
 		attachment.clearValue = info.clearValue;
 		//If the attachment is a swap attachment, create a new set of textures pointing to the swap attachments
 		if (info.isSwap) {
@@ -163,14 +159,14 @@ Renderer::Pass::Pass(
 					1,
 					renderer.swapchain->GetFormat(),
 					VK_IMAGE_ASPECT_COLOR_BIT,
-					VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL
+					VK_IMAGE_LAYOUT_UNDEFINED
 					));
 			}
 		}
-		//If not, move the old ones (ref attachments have 0 textures)
 		else {
-			for (auto& texture : info.textures) {
-				attachment.textures.emplace_back(std::move(texture));
+			//If not, move the old ones (ref attachments have 0 textures)
+			for (auto& tex : info.textures) {
+				attachment.textures.push_back(std::move(tex));
 			}
 		}
 		//If we are not referencing a different set of attachments, add it to the descriptions
@@ -188,14 +184,15 @@ Renderer::Pass::Pass(
 			attachmentLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 		}
 
+		//TODO: stencil operations
 		VkAttachmentDescription description{};
 		//Even if the attachment is stored, it is still required (by me) to be unused for the next frame
-		description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		description.initialLayout = (info.flags & AttachmentInfo::Load) ? attachmentLayout : VK_IMAGE_LAYOUT_UNDEFINED;
 		//If the image is a swapchain image, it must be optimal for presentation by the end of the renderpass
 		//TODO: don't force it to be
-		description.finalLayout = info.isSwap ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : attachmentLayout;
-		description.loadOp = info.clearAtStart ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		description.storeOp = info.store ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
+		description.finalLayout = (info.flags & AttachmentInfo::Presentable) ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : attachmentLayout;
+		description.loadOp = (info.flags & AttachmentInfo::Load) ? VK_ATTACHMENT_LOAD_OP_LOAD : (info.flags & AttachmentInfo::Clear) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+		description.storeOp = (info.flags & AttachmentInfo::Store) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 		description.samples = VK_SAMPLE_COUNT_1_BIT;      //TODO: allow different attachments to be multisampled or not
 		if (info.refTextures)                             // Or maybe just make them all multisampled
 			description.format = info.refTextures->front()->GetFormat();
@@ -349,16 +346,22 @@ void Renderer::AllocateCommandBuffers() {
 	}
 }
 
+#define CREATE_PASS(_name, _pass) passNames.push_back(_name); passes[_name] = _pass
+
 void Renderer::CreateRenderPasses() {
-	VkClearValue colorClear{};
-	colorClear.color = { 1.f, 1.f, 1.f };
 	VkClearValue depthClear{};
 	depthClear.depthStencil = { 1.f, 0 };
-	passes["Global"] = Pass::Builder(*this)
+
+	CREATE_PASS("Global", Pass::Builder(*this)
 		.SetSubpassCount(1)
-		.AddSwapAttachment("Color", { {0, Pass::AttachmentInfo::Color} }, { 0.35f, 0.77f, 0.93f })
-		.AddAttachment("Depth", VK_FORMAT_D32_SFLOAT, 0, { {0, Pass::AttachmentInfo::Depth} }, true, true, true, depthClear)
-		.Create();
+		.AddSwapAttachment("Color", { {0, Pass::AttachmentInfo::Color} }, Pass::AttachmentInfo::Clear | Pass::AttachmentInfo::Store, { 0.35f, 0.77f, 0.93f })
+		.AddAttachment("Depth", VK_FORMAT_D32_SFLOAT, 0, { {0, Pass::AttachmentInfo::Depth} }, Pass::AttachmentInfo::Clear, depthClear)
+		.Create());
+
+	CREATE_PASS("UI", Pass::Builder(*this)
+		.SetSubpassCount(1)
+		.AddPassAttachment("Color", *passes["Global"], { {0, Pass::AttachmentInfo::Color} }, Pass::AttachmentInfo::Load | Pass::AttachmentInfo::Store | Pass::AttachmentInfo::Presentable)
+		.Create());
 }
 
 void Renderer::Recreate() {
@@ -370,8 +373,7 @@ void Renderer::Recreate() {
 	vkDeviceWaitIdle(device.GetDevice());  //TODO: better way of doing this
 
 	swapchain->Recreate();
-	//TODO: recreate passes
-	passes.clear();
+	passNames.clear();
 	CreateRenderPasses();
 }
 

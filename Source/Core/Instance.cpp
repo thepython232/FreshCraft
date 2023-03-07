@@ -38,7 +38,7 @@ bool Instance::CheckValidationLayers() {
 void Instance::CreateInstance() {
 	VkApplicationInfo appInfo{};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-	appInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
+	appInfo.apiVersion = VK_MAKE_API_VERSION(0, 1, 2, 0);
 	appInfo.applicationVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 	appInfo.engineVersion = VK_MAKE_API_VERSION(0, 1, 0, 0);
 	appInfo.pApplicationName = "FreshCraft";

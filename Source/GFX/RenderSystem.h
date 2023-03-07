@@ -4,7 +4,7 @@
 
 class RenderSystemBase {
 public:
-	virtual ~RenderSystemBase() { }
+	virtual ~RenderSystemBase() = default;
 
 	virtual void Update(UpdateEvent& event) = 0;
 	virtual void Tick(TickEvent& event) = 0;
@@ -16,11 +16,10 @@ public:
 	virtual float TickWeight() const = 0;
 };
 
-//TODO: can this be reinterpret_casted into an R* ? That would avoid passing this to the ctor
 template<typename R>
 class RenderSystem : public RenderSystemBase {
 public:
-	virtual ~RenderSystem() { }
+	virtual ~RenderSystem() = default;
 
 	using HashKey = std::pair<std::string, uint32_t>;
 	using RenderFun = std::function<void(R*, RenderEvent&)>;
@@ -32,7 +31,6 @@ public:
 		HashKey key(event.passName, event.subpass);
 		if (renderHandlers.contains(key)) {
 			renderHandlers[key].second(event);
-			
 		}
 	}
 
@@ -48,10 +46,14 @@ public:
 	float TickWeight() const override { return tickWeight; }
 
 protected:
-	RenderSystem(class Renderer& renderer, R* system, float updateWeight = 10.f, float tickWeight = 10.f)
-		: renderer(renderer), system(system), updateWeight(updateWeight), tickWeight(tickWeight) { }
+	RenderSystem(class Renderer& renderer, float updateWeight = 10.f, float tickWeight = 10.f)
+		: renderer(renderer), system(system), updateWeight(updateWeight), tickWeight(tickWeight) {
+		system = static_cast<R*>(this);
+	}
 
 	void RegisterRenderHandler(std::string pass, uint32_t subpass, float weight, RenderFun fun) {
+		Assert(renderer.HasPass(pass));
+		Assert(renderer.HasSubpass(pass, subpass));
 		renderHandlers[HashKey(pass, subpass)] = std::pair(weight, std::bind(fun, system, std::placeholders::_1));
 	}
 

@@ -102,6 +102,9 @@
     <ClCompile Include="Source\GFX\Mesh.cpp">
       <Filter>Source Files\GFX</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Systems\UIRenderer.cpp">
+      <Filter>Source Files\Systems</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\Common.h">
@@ -182,6 +185,9 @@
     <ClInclude Include="Source\Noise\Noise.h">
       <Filter>Source Files\Noise</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Systems\UIRenderer.h">
+      <Filter>Source Files\Systems</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\chunk.frag">
@@ -194,6 +200,18 @@
       <Filter>Shaders</Filter>
     </None>
     <None Include="Shaders\transparent.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\rect.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\rect.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\hover.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\hover.frag">
       <Filter>Shaders</Filter>
     </None>
   </ItemGroup>

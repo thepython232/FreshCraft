@@ -6,63 +6,55 @@ ChunkManager::ChunkManager(Device& device) : device(device) {
 }
 
 void ChunkManager::Update(const UpdateEvent& event) {
-	for (int x = -RENDER_DISTANCE; x < RENDER_DISTANCE; ++x) {
-		for (int z = -RENDER_DISTANCE; z < RENDER_DISTANCE; ++z) {
+	for (int x = -RENDER_DISTANCE - 1; x < RENDER_DISTANCE + 1; ++x) {
+		for (int z = -RENDER_DISTANCE - 1; z < RENDER_DISTANCE + 1; ++z) {
 			glm::ivec2 chunkPos{ x, z };
 			chunkPos += glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / float(CHUNK_SIZE);
-			if (!chunks.contains(chunkPos)) {
+			if (!chunks.contains(chunkPos) && glm::distance(glm::vec3{ chunkPos.x * CHUNK_SIZE, 0.f, chunkPos.y * CHUNK_SIZE }, event.mainCamera.GetPos() * glm::vec3 { 1.f, 0.f, 1.f })
+				< (float(RENDER_DISTANCE + 1) * CHUNK_SIZE)) {
 				chunks[chunkPos] = std::make_unique<ChunkMesh>(device, chunkPos, *this);
-				chunksToUpdate.push_back(chunkPos);
 			}
 		}
 	}
 
+	sortedChunks.clear();
 	for (const auto& kv : chunks) {
-		if (std::find(chunksToUpdate.begin(), chunksToUpdate.end(), kv.first) == chunksToUpdate.end()  && kv.second->ShouldUpdate()) {
-			chunksToUpdate.push_back(kv.first);
+		if (glm::distance(glm::vec3{ kv.first.x * CHUNK_SIZE, 0.f, kv.first.y * CHUNK_SIZE }, event.mainCamera.GetPos() * glm::vec3 { 1.f, 0.f, 1.f })
+			< (float(RENDER_DISTANCE + 1) * CHUNK_SIZE)) {
+			sortedChunks.push_back(kv.first);
 		}
 	}
 
-	std::sort(chunksToUpdate.begin(), chunksToUpdate.end(), [&event](const glm::ivec2& a, const glm::ivec2& b) {
+	std::sort(sortedChunks.begin(), sortedChunks.end(), [&event](const glm::ivec2& a, const glm::ivec2& b) {
 		return glm::length(glm::vec2(a) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE)
 			< glm::length(glm::vec2(b) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE);
 		});
 
 	//Update closest chunks
-	if (!chunksToUpdate.empty()) {
-		ChunkMesh& mesh = *chunks[*chunksToUpdate.begin()];
-		chunksToUpdate.erase(chunksToUpdate.begin());
+	for (const auto& chunkID : sortedChunks) {
+		ChunkMesh& chunk = *chunks[chunkID];
+		if (chunk.ShouldUpdate()) {
+			for (int i = 0; i < 9; i++) {
+				GenerateChunk(glm::ivec2(i % 3 - 1, i / 3 - 1) + chunkID);
+			}
 
-		for (int i = 0; i < 9; i++) {
-			GenerateChunk(glm::ivec2(i % 3 - 1, i / 3 - 1) + mesh.pos);
+			chunk.Update(event);
+			break;
 		}
-
-		mesh.Update(event);
-		//Sort nearby chunks if neccessary
 	}
 
 	//Sort neccessary chunks
 	glm::ivec2 chunkID;
 	BlockToChunk(glm::ivec3(event.mainCamera.GetPos().x + CHUNK_SIZE / 2, 0, event.mainCamera.GetPos().z + CHUNK_SIZE / 2), chunkID);
-
-	//Player crossed a chunk border
-	if (chunkID != oldPlayerChunk) {
-		if (chunks.contains(oldPlayerChunk) && chunks[oldPlayerChunk]->Loaded())
-			chunks[oldPlayerChunk]->shouldResort = true;
-		if (chunks.contains(glm::ivec2(chunkID.x, oldPlayerChunk.y)) && chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->Loaded())
-			chunks[glm::ivec2(chunkID.x, oldPlayerChunk.y)]->shouldResort = true;
-		if (chunks.contains(glm::ivec2(oldPlayerChunk.x, chunkID.y)) && chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->Loaded())
-			chunks[glm::ivec2(oldPlayerChunk.x, chunkID.y)]->shouldResort = true;
-		if (chunks.contains(chunkID) && chunks[chunkID]->Loaded())
-			chunks[chunkID]->shouldResort = true;
-	}
-	//Player moved (also updates nearby chunks) TODO
-	else if (glm::ivec3(event.mainCamera.GetPos()) != oldPlayerPos) {
+	
+	//TODO: proper way of doing this
+	if (glm::ivec3(event.mainCamera.GetPos()) != oldPlayerPos) {
 		for (int x = -1; x <= 1; x++) {
 			for (int z = -1; z <= 1; z++) {
 				glm::ivec2 chunk{ x + chunkID.x, z + chunkID.y };
-				if (chunks.contains(chunk) && chunks[chunk]->Loaded())
+				if (chunks.contains(chunk) && chunks[chunk]->Loaded()) {
 					chunks[chunk]->shouldResort = true;
+				}
 			}
 		}
 	}
@@ -70,25 +62,16 @@ void ChunkManager::Update(const UpdateEvent& event) {
 	oldPlayerChunk = chunkID;
 	oldPlayerPos = glm::ivec3(event.mainCamera.GetPos());
 
-	std::vector<glm::ivec2> chunksToSort;
-	for (const auto& kv : chunks) {
-		if (kv.second->Loaded() && kv.second->ShouldResort()) {
-			chunksToSort.push_back(kv.first);
+	int i = 0;
+	for (const auto& chunkID : sortedChunks) {
+		ChunkMesh& chunk = *chunks[chunkID];
+		if (chunk.ShouldResort() && chunk.Loaded()) {
+			chunk.Resort(event);
+			if (i++ >= MAX_SORTED_CHUNKS) break;
 		}
-	}
-
-	//Sort by distance from the camera
-	std::sort(chunksToSort.begin(), chunksToSort.end(), [&event](const glm::ivec2& a, const glm::ivec2& b) {
-		return glm::length(glm::vec2(a) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE)
-			< glm::length(glm::vec2(b) - glm::vec2(event.mainCamera.GetPos().x, event.mainCamera.GetPos().z) / (float)CHUNK_SIZE);
-		});
-
-	for (int i = 0; i < std::min(MAX_SORTED_CHUNKS, static_cast<int>(chunksToSort.size())); i++) {
-		chunks[chunksToSort[i]]->Resort(event);
 	}
 }
 
-//TODO: broken
 bool ChunkManager::VoxelRaytrace(glm::vec3 pos, const glm::vec3& dir, float tMax, BlockHitInfo& info) const {
 	pos += glm::vec3{ CHUNK_SIZE / 2, 0, CHUNK_SIZE / 2 };
 	glm::vec3 tmpMin = pos;

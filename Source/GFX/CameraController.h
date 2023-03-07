@@ -2,6 +2,7 @@
 
 #include "Camera.h"
 #include "Core\Events.h"
+#include "Block\ChunkMesh.h"
 
 class CameraController {
 public:
@@ -10,6 +11,9 @@ public:
 	void Update(const UpdateEvent& event);
 	void Tick(const TickEvent& event);
 
+	BlockID SelectedBlock() const { return selectedBlock; }
+	bool GetSelectedBlockPos(glm::ivec3& blockPos) const;
+
 private:
 	Camera& camera;
 	class ChunkManager& manager;
@@ -17,5 +21,5 @@ private:
 	float sprintCooldown = 0.f;
 	bool sprinting = false;
 	float breakCooldown = 0.f;
-	int selectedBlock = 0;
+	BlockID selectedBlock = 0;
 };
