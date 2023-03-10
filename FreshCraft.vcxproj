@@ -216,8 +216,11 @@
     <None Include="Shaders\chunk.vert" />
     <None Include="Shaders\hover.frag" />
     <None Include="Shaders\hover.vert" />
+    <None Include="Shaders\preview.frag" />
+    <None Include="Shaders\preview.vert" />
     <None Include="Shaders\rect.frag" />
     <None Include="Shaders\rect.vert" />
+    <None Include="Shaders\shadow.vert" />
     <None Include="Shaders\transparent.frag" />
     <None Include="Shaders\wireframe.frag" />
   </ItemGroup>

@@ -6,8 +6,8 @@ const float MOVE_SPEED = 0.1f;
 const float PAN_SPEED = 3.f;
 const float SPRINT_COOLDOWN = 0.1f;
 const float SPRINT_BOOST = 6.f;
-const float BREAK_COOLDOWN = 0.08f;
-const float PLACE_COOLDOWN = 0.08f;
+const float BREAK_COOLDOWN = 0.15f;
+const float PLACE_COOLDOWN = 0.15f;
 const float MAX_INTERACT_DISTANCE = 8.f;
 
 CameraController::CameraController(Camera& camera, ChunkManager& manager) : camera(camera), manager(manager) {

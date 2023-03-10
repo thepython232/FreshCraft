@@ -1,7 +1,10 @@
 #include "Renderer.h"
 
-Renderer::Pass::Builder::Builder(Renderer& renderer) : renderer(renderer) {
-
+Renderer::Pass::Builder::Builder(Renderer& renderer, VkExtent2D extent) : renderer(renderer) {
+	if (extent.width == UINT32_MAX || extent.height == UINT32_MAX)
+		this->extent = renderer.GetExtent();
+	else
+		this->extent = extent;
 }
 
 Renderer::Pass::Builder& Renderer::Pass::Builder::SetSubpassCount(int numSubpasses) {
@@ -34,7 +37,8 @@ Renderer::Pass::Builder& Renderer::Pass::Builder::AddAttachment(
 	VkImageUsageFlags additionalUsage,
 	std::initializer_list<std::pair<int, AttachmentInfo::Type>> subpasses,
 	uint32_t flags,
-	VkClearValue clearValue
+	VkClearValue clearValue,
+	Texture::SamplerSettings samplerSettings
 ) {
 	AttachmentInfo info{};
 	info.flags = flags;
@@ -61,15 +65,19 @@ Renderer::Pass::Builder& Renderer::Pass::Builder::AddAttachment(
 	for (int i = 0; i < info.textures.size(); i++) {
 		info.textures[i] = std::make_unique<Texture>(
 			renderer.device,
-			renderer.swapchain->GetExtent().width,
-			renderer.swapchain->GetExtent().height,
+			extent.width,
+			extent.height,
 			1,
 			1,
 			format,
 			aspect,
 			usage,
 			VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
-			Device::QueueFamilyIndices::Graphics
+			Device::QueueFamilyIndices::Graphics,
+			VK_IMAGE_LAYOUT_UNDEFINED,
+			VK_IMAGE_TILING_OPTIMAL,
+			usage & VK_IMAGE_USAGE_SAMPLED_BIT,
+			samplerSettings
 		);
 	}
 
@@ -120,15 +128,16 @@ Renderer::Pass::Builder& Renderer::Pass::Builder::AddPassAttachment(
 }
 
 std::unique_ptr<Renderer::Pass> Renderer::Pass::Builder::Create() {
-	return std::make_unique<Pass>(renderer, subpassCount, dependencies, attachments);
+	return std::make_unique<Pass>(renderer, extent, subpassCount, dependencies, attachments);
 }
 
 Renderer::Pass::Pass(
 	Renderer& renderer,
+	VkExtent2D extent,
 	uint32_t subpassCount,
 	const std::vector<VkSubpassDependency>& dependencies,
 	std::vector<AttachmentInfo>& attachments
-) : renderer(renderer), extent(renderer.swapchain->GetExtent()), numSubpasses(subpassCount) {
+) : renderer(renderer), extent(extent), numSubpasses(subpassCount) {
 	//Basic structure representing what references a subpass has
 	struct SubpassInfo {
 		std::vector<VkAttachmentReference> colorRefs;
@@ -153,8 +162,8 @@ Renderer::Pass::Pass(
 					renderer.device,
 					renderer.swapchain->GetImage(j),
 					renderer.swapchain->GetImageView(j),
-					renderer.swapchain->GetExtent().width,
-					renderer.swapchain->GetExtent().height,
+					renderer.GetExtent().width,
+					renderer.GetExtent().height,
 					1,
 					1,
 					renderer.swapchain->GetFormat(),
@@ -176,8 +185,9 @@ Renderer::Pass::Pass(
 
 		//Decide what layout the attachment is in
 		VkImageLayout attachmentLayout;
-		if (IsDepthFormat((info.refTextures == nullptr) ? this->attachments[info.name].textures.front()->GetFormat() : info.refTextures->front()->GetFormat())
-			|| IsStencilFormat((info.refTextures == nullptr) ? this->attachments[info.name].textures.front()->GetFormat() : info.refTextures->front()->GetFormat())) {
+		VkFormat imageFormat = (info.refTextures == nullptr) ? this->attachments[info.name].textures.front()->GetFormat() : info.refTextures->front()->GetFormat();
+		if (IsDepthFormat(imageFormat)
+			|| IsStencilFormat(imageFormat)) {
 			attachmentLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		}
 		else {
@@ -191,13 +201,16 @@ Renderer::Pass::Pass(
 		//If the image is a swapchain image, it must be optimal for presentation by the end of the renderpass
 		//TODO: don't force it to be
 		description.finalLayout = (info.flags & AttachmentInfo::Presentable) ? VK_IMAGE_LAYOUT_PRESENT_SRC_KHR : attachmentLayout;
+		if (info.flags & AttachmentInfo::Sampled) {
+			if (IsDepthFormat(imageFormat) || IsStencilFormat(imageFormat))
+				description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+			else
+				description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		}
 		description.loadOp = (info.flags & AttachmentInfo::Load) ? VK_ATTACHMENT_LOAD_OP_LOAD : (info.flags & AttachmentInfo::Clear) ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 		description.storeOp = (info.flags & AttachmentInfo::Store) ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		description.samples = VK_SAMPLE_COUNT_1_BIT;      //TODO: allow different attachments to be multisampled or not
-		if (info.refTextures)                             // Or maybe just make them all multisampled
-			description.format = info.refTextures->front()->GetFormat();
-		else
-			description.format = this->attachments[info.name].textures.front()->GetFormat();
+		description.format = imageFormat;
+		description.samples = VK_SAMPLE_COUNT_1_BIT;
 
 		descriptions.push_back(description);
 
@@ -294,7 +307,7 @@ void Renderer::Pass::Begin(VkCommandBuffer commandBuffer) {
 	beginInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 	beginInfo.renderPass = renderPass;
 	beginInfo.framebuffer = framebuffers[renderer.imageIndex];
-	beginInfo.renderArea.extent = extent;
+	beginInfo.renderArea.extent = this->extent;
 	beginInfo.renderArea.offset = { 0, 0 };
 	std::vector<VkClearValue> clearValues;
 	for (const auto& kv : attachments) {
@@ -308,8 +321,8 @@ void Renderer::Pass::Begin(VkCommandBuffer commandBuffer) {
 	VkViewport viewport{};
 	viewport.x = 0;
 	viewport.y = 0;
-	viewport.width = static_cast<float>(extent.width);
-	viewport.height = static_cast<float>(extent.height);
+	viewport.width = static_cast<float>(this->extent.width);
+	viewport.height = static_cast<float>(this->extent.height);
 	viewport.minDepth = 0.f;
 	viewport.maxDepth = 1.f;
 
@@ -317,7 +330,7 @@ void Renderer::Pass::Begin(VkCommandBuffer commandBuffer) {
 
 	VkRect2D scissor{};
 	scissor.offset = { 0, 0 };
-	scissor.extent = extent;
+	scissor.extent = this->extent;
 
 	vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 }
@@ -351,6 +364,17 @@ void Renderer::AllocateCommandBuffers() {
 void Renderer::CreateRenderPasses() {
 	VkClearValue depthClear{};
 	depthClear.depthStencil = { 1.f, 0 };
+
+	Texture::SamplerSettings shadowSamplerSettings{};
+	shadowSamplerSettings.filter = VK_FILTER_NEAREST;
+	shadowSamplerSettings.enableAnisotropy = VK_FALSE;
+	shadowSamplerSettings.addressMode = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_BORDER;
+	shadowSamplerSettings.borderColor = VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE; //In case we see something outside of our range...
+
+	CREATE_PASS("Shadow", Pass::Builder(*this, VkExtent2D{ SHADOWMAP_EXTENT, SHADOWMAP_EXTENT })
+		.SetSubpassCount(1)
+		.AddAttachment("ShadowDepth", VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_SAMPLED_BIT, { {0, Pass::AttachmentInfo::Depth} }, Pass::AttachmentInfo::Clear | Pass::AttachmentInfo::Store | Pass::AttachmentInfo::Sampled, depthClear, shadowSamplerSettings)
+		.Create());
 
 	CREATE_PASS("Global", Pass::Builder(*this)
 		.SetSubpassCount(1)

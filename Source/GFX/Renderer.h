@@ -4,6 +4,8 @@
 #include "Core\Swapchain.h"
 #include "Texture.h"
 
+constexpr int SHADOWMAP_EXTENT = 4096;
+
 class Renderer {
 public:
 	//Defines a specific rendering pass, and includes associated renderPass, framebuffers, and other resources/functions
@@ -36,13 +38,14 @@ public:
 
 		struct Attachment {
 			std::vector<std::unique_ptr<Texture>> textures;
+			VkExtent2D extent;
 			uint32_t flags;
 			VkClearValue clearValue;
 		};
 
 		class Builder {
 		public:
-			Builder(Renderer& renderer);
+			Builder(Renderer& renderer, VkExtent2D extent = { UINT32_MAX, UINT32_MAX });
 
 			Builder& SetSubpassCount(int numSubpasses);
 
@@ -60,7 +63,10 @@ public:
 				VkImageUsageFlags additionalUsage,
 				std::initializer_list<std::pair<int, AttachmentInfo::Type>> subpasses,
 				uint32_t flags,
-				VkClearValue clearValue = {});
+				VkClearValue clearValue = {},
+				Texture::SamplerSettings samplerSettings
+				= { VK_SAMPLER_ADDRESS_MODE_REPEAT, VK_FALSE, VK_BORDER_COLOR_FLOAT_OPAQUE_BLACK, VK_FILTER_NEAREST, 0.f }
+		);
 
 			Builder& AddSwapAttachment(
 				std::string name,
@@ -81,11 +87,13 @@ public:
 			uint32_t subpassCount;
 			std::vector<VkSubpassDependency> dependencies;
 			std::vector<AttachmentInfo> attachments;
+			VkExtent2D extent;
 			Renderer& renderer;
 		};
 
 		Pass(
 			Renderer& renderer,
+			VkExtent2D extent,
 			uint32_t subpassCount,
 			const std::vector<VkSubpassDependency>& dependencies,
 			std::vector<AttachmentInfo>& attachments);
@@ -142,6 +150,8 @@ public:
 
 	float GetAspect() const { return (float)swapchain->GetExtent().width / swapchain->GetExtent().height; }
 	uint32_t GetFrameIndex() const { return swapchain->GetFrameIndex(); }
+	uint32_t GetImageIndex() const { return imageIndex; }
+	uint32_t GetImageCount() const { return swapchain->GetImageCount(); }
 	VkExtent2D GetExtent() const { return swapchain->GetExtent(); }
 
 private:

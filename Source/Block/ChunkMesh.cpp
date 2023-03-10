@@ -39,6 +39,15 @@ const std::vector<glm::vec3> blockNormals = {
 	{ 0.f, 0.f, -1.f }
 };
 
+const std::vector<glm::vec3> blockColors = {
+	{ 1.f, 1.f, 1.f },
+	{ 0.7f, 0.7f, 0.7f },
+	{ 0.9f, 0.9f, 0.9f },
+	{ 0.85f, 0.85f, 0.85f },
+	{ 0.7f, 0.7f, 0.7f },
+	{ 0.75f, 0.75f, 0.75f }
+};
+
 const std::vector<glm::vec2> blockUvs = {
 	{ 0.f, 1.f / (float)TEXTURE_ATLAS_SIZE },
 	{ 0.f, 0.f },
@@ -114,7 +123,7 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 									//Fix transparent blocks on holed blocks
 									if (sideBlock > 0 && (blocks[sideBlock - 1].flags & Block::HOLES))
 										vertex.pos -= blockNormals[s] * 0.001f;
-									vertex.color = { 1.f, 1.f, 1.f };
+									vertex.color = blockColors[s];
 									vertex.normal = blockNormals[s];
 									vertex.uv = blockUvs[j] + block.textureOffsets[s];
 
@@ -128,7 +137,7 @@ void ChunkMesh::Update(const UpdateEvent& event) {
 									if ((block.flags & Block::LIQUID) && vertex.pos.y == 1.f + blockPos.y) {
 										vertex.pos.y -= 0.0625f;
 									}
-									vertex.color = { 1.f, 1.f, 1.f };
+									vertex.color = blockColors[s];
 									vertex.normal = blockNormals[s];
 									vertex.uv = blockUvs[j] + block.textureOffsets[s];
 

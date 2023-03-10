@@ -6,6 +6,8 @@ THE BIG TODOS:
  - Renderer with AO, Deferred rendering, specular (from texture atlas), normal mapping, bloom and HDR, maybe PBR?
  - Multisampling and Sample Rate Shading to improve textures significantly from afar
  - Shadow mapping
+ - Multithreaded chunk generation - generate several chunks each frame with different threads
+ - Multithreaded command buffer generation - create seperate threads for each pass (as the only things being written to are command buffers)
  - Lights - use descriptor arrays / storage buffers
  - Custom allocator for chunks (both DRAM and VRAM)
  - Biomes - either perlin or worley noise (maybe integrate structures into biome generation?)
@@ -21,6 +23,7 @@ THE BIG TODOS:
  - Code for things like doors and chests that update every frame
  - Procedurally render orthographics views of all blocks for use in the hotbar
  - Seperate Level class that can handle storing chunks on disk
+ - ECS, TCS, and ICS
 
  And finally,
  MORE GAMEPLAY!

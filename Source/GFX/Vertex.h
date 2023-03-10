@@ -48,7 +48,7 @@ struct Vertex {
 
 template<typename T, typename... Rest>
 void HashCombine(std::size_t& seed, const T& val, Rest... rest) {
-	seed ^= std::hash<T>{}(val)+0x9e3779b9 + (seed << 6) + (seed >> 2);
+	seed ^= std::hash<T>{}(val) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 	(HashCombine(seed, rest), ...);
 }
 

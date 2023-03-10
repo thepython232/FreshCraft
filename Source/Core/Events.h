@@ -9,6 +9,8 @@ struct GlobalUBO {
 	alignas(16) glm::mat4 proj;
 	alignas(4) float fogClose, fogDist;
 	alignas(16) glm::vec4 fogColor;
+	alignas(16) glm::vec3 lightDir;
+	alignas(16) glm::vec4 lightColor;
 };
 
 struct UpdateEvent {

@@ -51,6 +51,8 @@ public:
 	uint32_t Width() const { return width; }
 	uint32_t Height() const { return height; }
 	uint32_t Depth() const { return depth; }
+	VkExtent2D Extent2D() const { return VkExtent2D{ width, height }; }
+	VkExtent3D Extent3D() const { return VkExtent3D{ width, height, depth }; }
 	uint32_t MipLevels() const { return mipLevels; }
 	bool HasSampler() const { return sampler != VK_NULL_HANDLE; }
 
